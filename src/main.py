@@ -19,7 +19,7 @@ player_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
 cursor_swap_done = False
 
 
-# BG = pygame.image.load(".jpg")
+
 
 def main():
     global last_move_time

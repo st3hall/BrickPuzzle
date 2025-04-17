@@ -1,0 +1,37 @@
+**Bricks**
+
+
+Suggested project structure:
+project_name/
+├── src/
+│   ├── package_name/
+│   │   ├── __init__.py
+│   │   ├── module1.py
+│   │   ├── module2.py
+│   │   └── ...
+│   └── main.py  name this something like app.py, tell you the starting point
+├── tests/
+│   ├── __init__.py
+│   ├── test_module1.py
+│   ├── test_module2.py
+│   └── ...
+├── data/
+│   ├── data1.txt
+│   ├── data2.csv
+│   └── ...
+├── docs/
+│   ├── conf.py
+│   ├── index.rst
+│   └── ...
+├── scripts/
+│   ├── script1.py
+│   └── script2.py
+├── requirements.txt
+├── setup.py
+├── pyproject.toml
+├── README.md
+└── LICENSE
+
+Rect(left, top, width, height) -> Rect #storing of rect corrdinats
+
+The coordinate system starts at the top-left corner of the screen, with (0, 0) being the top-left.

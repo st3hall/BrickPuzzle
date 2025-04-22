@@ -1,3 +1,2 @@
-Pygame
-time
+pygame
 random

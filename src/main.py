@@ -49,8 +49,7 @@ def main():
                     temp = cursor_swap_input(field, temp, cursor_index_x, cursor_index_y)
                     cursor_swap_done = True
                     swap_occured = True
-
-                   
+                
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_SPACE:
                     cursor_swap_done = False
@@ -65,7 +64,7 @@ def main():
             swap_occured = False
         else:
             field = update_grid(field, temp, ROWS, COLUMNS, operation_flag)
-            
+
         render_grid(BRICK_WIDTH, BRICK_HEIGHT, ROWS, COLUMNS, field)
         draw_cursor(player_pos.x, player_pos.y, BRICK_WIDTH, BRICK_HEIGHT)    
                 
@@ -159,6 +158,7 @@ def cursor_swap_input(field, temp, cursor_x, cursor_y):
           
         cursor_swap_done = True
         last_move_time = current_time
+        print(f"Swapped: {cursor_L['abbr']} with {cursor_R['abbr']} at ({row}, {column}) and ({row}, {column-1})")
     
     return temp
 def seek_for_empty(field, temp, rows, columns):

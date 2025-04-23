@@ -287,3 +287,34 @@ def seek_for_match(field, temp, rows, columns):
  ['R', 'B', 'EM', 'P', 'L', 'B'], 
  ['Y', 'EM', 'L', 'B', 'EM', 'L'], 
  ['B', 'G', 'Y', 'R', 'R', 'L']]
+
+
+ def seek_for_empty(field, temp, rows, columns):
+    for row in range(rows-1, -1, -1):  # Start from the last row and go upwards, including row 0
+        for column in range(columns):
+            if field[row][column] == EMPTY:
+                for r in range(row, 0, -1):  # Move the entire column down
+                    temp[r][column] = field[r-1][column]
+                temp[0][column] = EMPTY
+
+    # Additional check to ensure bricks don't disappear
+    for row in range(rows):
+        for column in range(columns):
+            if temp[row][column] != EMPTY and row < rows - 1 and temp[row + 1][column] == EMPTY:
+                temp[row + 1][column] = temp[row][column]
+                temp[row][column] = EMPTY
+
+    return temp
+
+
+def seek_for_horizontal_match(field, temp, rows, columns):
+    for row in range(rows-1, -1, -1):
+        for column in range(columns):
+            if column + 2 < columns:
+                if field[row][column] != EMPTY and row + 1 < rows and field[row+1][column] != EMPTY and field[row][column] != MATCH_MADE:
+                    if field[row][column] == field[row][column+1] == field[row][column+2]:
+                        temp[row][column] = MATCH_MADE
+                        temp[row][column+1] = MATCH_MADE
+                        temp[row][column+2] = MATCH_MADE
+                
+    return temp

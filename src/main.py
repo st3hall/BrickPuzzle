@@ -3,6 +3,7 @@ from grid import *
 
 import pygame
 import random
+import copy
 
 pygame.init()
 
@@ -17,6 +18,7 @@ init_y = center_of_window_y - (BRICK_HEIGHT * ROWS / 2)
 player_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
 cursor_swap_done = False
 matches_found = False
+match_made = False
 
 
 
@@ -24,7 +26,8 @@ matches_found = False
 def main():
     global last_move_time
     global cursor_swap_done
-    move_delay = 70
+    global match_made
+    move_delay = 100
     cursor_index_y = ROWS // 2
     cursor_index_x = COLUMNS // 2
     last_move_time = pygame.time.get_ticks()
@@ -32,11 +35,15 @@ def main():
     temp_grid = []
     field_grid= []
 
+
     field, temp = initial_run(ROWS, COLUMNS, COLORS_LIST, temp_grid, field_grid)
+    field = update_grid(field, temp, ROWS, COLUMNS, True, False)
     render_grid(BRICK_WIDTH, BRICK_HEIGHT, ROWS, COLUMNS, field)
 
     operation_flag = True
     swap_occured = False
+    match_made = False
+
 
     while run:
         for event in pygame.event.get():
@@ -60,17 +67,19 @@ def main():
         cursor_index_y, cursor_index_x, last_move_time = update_cursor_position(keys, player_pos,cursor_index_x, cursor_index_y, last_move_time,move_delay)
         
         if swap_occured:
-            field = update_grid(field, temp, ROWS, COLUMNS, operation_flag)
+            field = update_grid(field, temp, ROWS, COLUMNS, operation_flag, swap_occured)
             swap_occured = False
+            
         else:
-            field = update_grid(field, temp, ROWS, COLUMNS, operation_flag)
+            field = update_grid(field, temp, ROWS, COLUMNS, operation_flag, swap_occured)
 
         render_grid(BRICK_WIDTH, BRICK_HEIGHT, ROWS, COLUMNS, field)
         draw_cursor(player_pos.x, player_pos.y, BRICK_WIDTH, BRICK_HEIGHT)    
                 
         pygame.display.flip()      
-        dt = clock.tick(100) / 1000
-        operation_flag = not operation_flag        
+        dt = clock.tick(300) / 1000
+        operation_flag = not operation_flag
+      
     pygame.quit()
 
 def update_cursor_position(keys, player_pos, cursor_index_x, cursor_index_y, last_move_time, move_delay):
@@ -144,30 +153,31 @@ def cursor_swap_input(field, temp, cursor_x, cursor_y):
     column = int(cursor_x)
 
     if column > 0:
-        cursor_L = field[row][column-1]
-        cursor_R = field[row][column]
-        
-        # Swap the elements
-        temp_L = cursor_L
-        cursor_L = cursor_R 
-        cursor_R = temp_L
+        if temp[row][column-1] != EMPTY or temp[row][column] != EMPTY: #This occasionally will Empty one of the bricks. Happens at the top or when you swap with an empty over an empty.
+            import copy
 
-        # Update the temp array
-        temp[row][column-1] = cursor_L
-        temp[row][column] = cursor_R
+            temp[row][column-1], temp[row][column] = (
+                copy.deepcopy(temp[row][column]),
+                copy.deepcopy(temp[row][column-1]),
+                )
+            #pygame.time.wait(50)
+            
+            # temp_L = temp[row][column-1]
+            # temp[row][column-1] = temp[row][column]
+            # temp[row][column] = temp_L
           
-        cursor_swap_done = True
-        last_move_time = current_time
-        print(f"Swapped: {cursor_L['abbr']} with {cursor_R['abbr']} at ({row}, {column}) and ({row}, {column-1})")
-    
+            cursor_swap_done = True
+            last_move_time = current_time
+            print(f"Swapped: {temp[row][column-1]['abbr']} with {temp[row][column]['abbr']} at ({row}, {column}) and ({row}, {column-1})")
+
     return temp
 def seek_for_empty(field, temp, rows, columns):
-    for row in range(rows-1, -1, -1):  # Start from the last row and go upwards, including row 0
+    for row in range(rows-1, -1, -1):  # Start from the last row and go upwards, including row 0w
         for column in range(columns):
-            if field[row][column] == EMPTY:
+            if field[row][column] == EMPTY:          
                 for r in range(row, 0, -1):  # Move the entire column down
                     temp[r][column] = field[r-1][column]
-                temp[0][column] = EMPTY  # Set the top cell to EMPTY 
+                temp[0][column] = EMPTY  # Set the top cell to EMPTY
     return temp
 def seek_for_horizontal_match(field, temp, rows, columns):
     for row in range(rows-1, -1, -1):
@@ -178,7 +188,8 @@ def seek_for_horizontal_match(field, temp, rows, columns):
                             temp[row][column] = MATCH_MADE
                             temp[row][column+1] = MATCH_MADE
                             temp[row][column+2] = MATCH_MADE
-                
+                            #pygame.time.wait(50)
+            
     return temp
 def seek_for_vertical_match(field, temp, rows, columns):
     for row in range(rows-1, -1, -1):  # Start from the second to last row and go upwards
@@ -190,12 +201,16 @@ def seek_for_vertical_match(field, temp, rows, columns):
                             temp[row][column] = MATCH_MADE
                             temp[row-1][column] = MATCH_MADE
                             temp[row-2][column] = MATCH_MADE
+                            #pygame.time.wait(50)
     return temp
 def clear_matches(field, temp, rows, columns):
+    global match_made
     for row in range(rows-1, -1, -1):
         for column in range(columns):
             if field[row][column] == MATCH_MADE:
                 temp[row][column] = EMPTY
+                match_made = True
+                print("match made")
     return temp
 def write_from_temp(field, temp):
     read_grid = []
@@ -203,7 +218,7 @@ def write_from_temp(field, temp):
     for row in range(len(field)):
         read_row = []
         for column in range(len(field[row])):
-            field[row][column] = temp[row][column]
+            field[row][column] = copy.deepcopy(temp[row][column])
             read_row.append(field[row][column]['value'])
         read_grid.append(read_row)
    #print(read_grid)
@@ -217,17 +232,18 @@ def render_grid(x_offset, y_offset, rows, columns, field):
             rgb_value = cell_value["rgb"]
             draw_brick(rgb_value, pos_x, pos_y)
     pygame.time.wait(50)
-def update_grid(field, temp, rows, columns, operation_flag):   
+
+def update_grid(field, temp, rows, columns, operation_flag, swap_occured):   
     if operation_flag:
         temp = seek_for_vertical_match(field, temp, rows, columns)
-        temp = seek_for_horizontal_match(field, temp, rows, columns)
-        temp = seek_for_empty(field, temp, rows, columns)
+        temp = seek_for_horizontal_match(field, temp, rows, columns)     
     else:
-        temp = clear_matches(field, temp, rows, columns) 
+        temp = clear_matches(field, temp, rows, columns)
+    if not swap_occured:    
+        temp = seek_for_empty(field, temp, rows, columns)
     
     field = write_from_temp(field, temp)    
     return field
-
 
 if __name__ == "__main__":
     main()

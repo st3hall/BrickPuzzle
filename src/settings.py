@@ -56,6 +56,11 @@ BK = {"name": "BLACK", "hex": "#000000ff", "abbr": "BK", "rgb": (0, 0, 0), "valu
 EMPTY = {"name": "EMPTY", "hex": "#525252", "abbr": "EM", "rgb": (82, 82, 82, 50), "value": 0}  # Black for now
 MATCH_MADE = {"name": "MATCH_MADE", "hex": "#FBFFB9", "abbr": "MM", "rgb": (251, 255, 185), "value": 10}  # White for now
 
+
+
+
+
+
 COLORS_LIST = [Y, R, B, G, L, P,EMPTY]
 
 #MATCH_MADE = pygame.draw.line(screen,)
@@ -63,18 +68,28 @@ COLORS_LIST = [Y, R, B, G, L, P,EMPTY]
 CURSOR_DIMS = [(center_of_field_x + (BRICK_WIDTH/4), center_of_field_y),(center_of_field_x, center_of_field_y),(center_of_field_x, center_of_field_y + BRICK_HEIGHT),(center_of_field_x + (BRICK_WIDTH/4), center_of_field_y + BRICK_HEIGHT)]
 
 class Brick(pygame.sprite.Sprite):
-    def __init__(self, brick_data, row, column):
+    def __init__(self, brick_data, row, column, image=None):
         super().__init__()
         self.brick_data = brick_data
         self.row = row
         self.column = column
         self.id = uuid.uuid4()
 
-        self.image = pygame.Surface([BRICK_WIDTH, BRICK_HEIGHT], pygame.SRCALPHA)
-        self.image.fill(brick_data["rgb"])
+        if image:
+            self.image = pygame.transform.scale(image, (BRICK_WIDTH, BRICK_HEIGHT))
+        else:
+            self.image = pygame.Surface([BRICK_WIDTH, BRICK_HEIGHT], pygame.SRCALPHA)
+            self.image.fill(brick_data["rgb"])
+
+        # Apply the color to the brick image using a transparent overlay
+        self.apply_color(brick_data["rgb"])
+
+
         self.original_color = brick_data["rgb"]
 
-        pos_y = init_y + row * BRICK_HEIGHT #init_x,y is 0,0
+
+
+        pos_y = init_y + row * BRICK_HEIGHT
         pos_x = init_x + column * BRICK_WIDTH
 
         self.rect = self.image.get_rect()
@@ -82,8 +97,7 @@ class Brick(pygame.sprite.Sprite):
 
         self.target_y = pos_y
         self.target_x = pos_x
-        
-        self.fall_speed = 8
+        self.fall_speed = 1
         self.move_speed = 8
 
         self.is_dying = False
@@ -91,7 +105,18 @@ class Brick(pygame.sprite.Sprite):
         self.scale_factor = 1.0
         self.is_match = False
         self.change_color_timer = 0
-            
+        self.is_falling = False
+
+    def apply_color(self, color):
+        """
+        Applies a color tint to the grayscale image using multiplication for stronger, visible color.
+        """
+        overlay = pygame.Surface(self.image.get_size(), pygame.SRCALPHA)
+        overlay.fill((*color, 255))  # Full color, full alpha
+
+        # Multiply the grayscale image by the color to tint it
+        self.image.blit(overlay, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+
     def move_to_index(self, new_row, new_col):
         self.row = new_row
         self.column = new_col
@@ -116,6 +141,9 @@ class Brick(pygame.sprite.Sprite):
 
     def is_in_dying_state(self):
         return self.is_dying
+
+    def is_falling_state(self):
+        return self.is_falling  # Method to check if the brick is falling
     
     def update(self):
         if self.is_match:
@@ -162,10 +190,14 @@ class Brick(pygame.sprite.Sprite):
                     self.rect.y += self.fall_speed
                     if self.rect.y > self.target_y:
                         self.rect.y = self.target_y
+                    self.is_falling = True  # The brick is falling
                 elif self.rect.y > self.target_y:
                     self.rect.y -= self.fall_speed
                     if self.rect.y < self.target_y:
                         self.rect.y = self.target_y
+                    self.is_falling = True  # The brick is falling
+                else:
+                    self.is_falling = False  # Brick has reached its target position
 
 
 

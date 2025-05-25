@@ -5,6 +5,7 @@ import pygame
 import random
 import copy
 import json
+import os
 
 pygame.init()
 
@@ -19,8 +20,26 @@ cursor_swap_done = False
 matches_found = False
 match_made = False
 all_bricks = pygame.sprite.Group()
-background = pygame.image.load('images\hill-country-braun-sunrise.jpg')
 
+background = pygame.image.load('images/Background_Drop/Untitled_Artwork-01.png')
+background = pygame.transform.scale(background, (screen.get_width(), screen.get_height()))
+
+background_frames = []
+frame_folder = 'images/Background_Drop'  # Change to your folder name
+frame_names = sorted(os.listdir(frame_folder))  # Sort ensures correct order
+
+for file_name in frame_names:
+    if file_name.endswith('.png'):  # Or .jpg if needed
+        image = pygame.image.load(os.path.join(frame_folder, file_name))
+        image = pygame.transform.scale(image, (screen.get_width(), screen.get_height()))
+        background_frames.append(image)
+
+
+
+
+brick_image = pygame.image.load("images/Take_One-1.png").convert_alpha()
+brick_image = pygame.transform.scale(brick_image, (BRICK_WIDTH, BRICK_HEIGHT))
+all_animations_complete = True
 
 def main():
     global last_move_time
@@ -38,13 +57,23 @@ def main():
     match_made = False
     operation_flags = ["Match", "Empty", "Clear"]
     operation_cycle = 0
+    operation_flag = operation_flags[operation_cycle % len(operation_flags)]
+
+    #Background animation things
+    current_frame = 0
+    frame_timer = 0
+    frame_delay = 10
+
+    animation_started = False
+    start_time = pygame.time.get_ticks()
+    delay_before_start = random.randint(1000, 3000)  # 1–3 seconds delay (in milliseconds)
 
     #initalize all the grids field, temp, sprite_grid, they should all have the same contents
     field, temp, sprite_grid, all_bricks = initial_run(ROWS, COLUMNS, COLORS_LIST, temp_grid, field_grid, sprite_grid)
-    
+
     print_data_to_console(field, temp, sprite_grid)
 
-    field = update_grid(field, temp, ROWS, COLUMNS, "Match", False)
+    field = update_grid(field, temp, ROWS, COLUMNS, "Match", False,None)
     print_data_to_console(field, temp, sprite_grid)
     field, sprite_grid = sync_temp_to_sprites(field, temp, sprite_grid, "Clear", swap_occured)
 
@@ -69,9 +98,30 @@ def main():
                 if event.key == pygame.K_SPACE:
                     cursor_swap_done = False
 
-        operation_flag = operation_flags[operation_cycle % len(operation_flags)]
 
-        screen.blit(background, (-center_of_window_x,-center_of_field_y))
+        #Randomly start background anim
+        now = pygame.time.get_ticks()
+
+        if not animation_started:
+            if now - start_time >= delay_before_start:
+                animation_started = True
+                current_frame = 0
+                frame_timer = 0
+        else:
+            frame_timer += 1
+            if frame_timer >= frame_delay:
+                frame_timer = 0
+                current_frame += 1
+                if current_frame >= len(background_frames):
+                    # Animation finished — reset for next cycle
+                    animation_started = False
+                    start_time = now  # reset start time for next delay
+                    delay_before_start = random.randint(1000, 10000)  # new random delay
+                    current_frame = 0  # reset frame index
+
+        # Draw the current background frame
+        screen.blit(background_frames[current_frame], (0, 0))
+
         keys = pygame.key.get_pressed()
 
         cursor_index_y, cursor_index_x, last_move_time = update_cursor_position(keys, player_pos,cursor_index_x, cursor_index_y, last_move_time, move_delay)
@@ -79,14 +129,14 @@ def main():
         if swap_occured:
             swap_occured = False
 
-        
-        temp = update_grid(field, temp, ROWS, COLUMNS, operation_flag, swap_occured)
+
+        temp = update_grid(field, temp, ROWS, COLUMNS, operation_flag, swap_occured,None)
         print_data_to_console(field, temp, sprite_grid)
         field, sprite_grid, sync_temp_to_sprites(field, temp, sprite_grid, operation_flag, swap_occured)
         if operation_flag == 'Clear':
             pygame.time.wait(10)
         operation_cycle += 1
-        
+
 
 
         print_data_to_console(field, temp, sprite_grid)
@@ -94,14 +144,17 @@ def main():
         # all_bricks.update()
         # all_bricks.draw(screen)
         all_animations_complete = render_sprites(sprite_grid)
-        draw_cursor(player_pos.x, player_pos.y, BRICK_WIDTH, BRICK_HEIGHT)
 
-        if all_animations_complete:
-            #print("Animations are complete")
-            update_grid(field, temp, ROWS, COLUMNS, operation_flag, swap_occured)
+
+
+        update_grid(field, temp, ROWS, COLUMNS, operation_flag, swap_occured,sprite_grid)
+        draw_cursor(player_pos.x, player_pos.y, BRICK_WIDTH, BRICK_HEIGHT) #Moved Down to have appear in front of blocks
 
         pygame.display.flip()
         dt = clock.tick(300) / 1000
+
+        if all_animations_complete:
+            operation_flag = operation_flags[operation_cycle % len(operation_flags)]
 
     pygame.quit()
 
@@ -162,7 +215,7 @@ def initial_run(rows, columns, brick_colors, temp, field, sprite_grid):
             brick_data = brick_color.copy()
             brick_data["id"] = str(uuid.uuid4())
 
-            brick = Brick(brick_data, row, column)
+            brick = Brick(brick_data, row, column,brick_image)
             all_bricks.add(brick)
 
             temp_row.append(brick_data)
@@ -179,7 +232,7 @@ def rebuild_sprite_grid(field):
     for row_idx, row in enumerate(field):
         sprite_row = []
         for col_idx, brick_data in enumerate(row):
-            brick = Brick(brick_data, row_idx, col_idx)
+            brick = Brick(brick_data, row_idx, col_idx,brick_image)
             sprite_row.append(brick)
         sprite_grid.append(sprite_row)
     return sprite_grid
@@ -224,17 +277,17 @@ def sync_temp_to_sprites(field, temp, sprite_grid, operation_flag, swap_occured)
             if 'id' in new_sprite_data:  # Check if 'id' exists in new_sprite_data
                 new_sprite_id = new_sprite_data['id']
                 if new_sprite_id in sprite_lookup:
-                    
+
                     if operation_flag == "Match":
                         if abbr == 'MM':
-                            print(f"Sprite Match: {row},{col}")   
+                            print(f"Sprite Match: {row},{col}")
                             old_sprite = sprite_grid[row][col]
                             if old_sprite:
                                 match_brick_sprite(old_sprite, MATCH_MADE)
                                 new_sprite_grid[row][col] = old_sprite
                                 print(f"Sprite Match: {row},{col}")
                                 field[row][col]['abbr'] = 'MM'
-                    
+
                     if operation_flag == "Empty":
                         if abbr == 'EM': #Temp = EM Happens in seek_for_empty
                             print(f"Sprite Killed: {row},{col}")
@@ -244,7 +297,7 @@ def sync_temp_to_sprites(field, temp, sprite_grid, operation_flag, swap_occured)
                                 print(f"Sprite Killed: {row},{col}")
                                 field[row][col]['abbr'] = 'EM'
                                 new_sprite_grid[row][col] = old_sprite
-                                    
+
                     if operation_flag == "Clear":
                         if abbr == 'EM':
                             print(f"Sprite Cleared: {row},{col}")
@@ -263,14 +316,16 @@ def sync_temp_to_sprites(field, temp, sprite_grid, operation_flag, swap_occured)
 
     return field, sprite_grid
 
-def update_grid(field, temp, rows, columns, operation_flag, swap_occured):
-    if operation_flag == "Match":
-        temp = seek_for_vertical_match(field, temp, rows, columns)
-        temp = seek_for_horizontal_match(field, temp, rows, columns)
-        #print(f"Matches searched")
-    if operation_flag == "Empty":
-        temp = clear_matches(field, temp, rows, columns)
-        #print(f"Matches cleared")
+def update_grid(field, temp, rows, columns, operation_flag, swap_occured,sprite_grid):
+    if sprite_grid!=None:
+        if render_sprites(sprite_grid):
+            if operation_flag == "Match":
+                match_map = find_matches(field, rows, columns)
+                apply_matches(temp, match_map, rows, columns)
+                #print(f"Matches searched")
+            if operation_flag == "Empty":
+                temp = clear_matches(field, temp, rows, columns)
+                #print(f"Matches cleared")
     if not swap_occured:
         temp = seek_for_empty(field, temp, rows, columns)
         #print(f"Empties searched, and grid phisiscs performed")
@@ -305,33 +360,44 @@ def seek_for_empty(field, temp, rows, columns):
                 temp[0][column] = EMPTY  # Set the top cell to EMPTY there will not be an id added...atleast not yet.
     return temp
 
-def seek_for_horizontal_match(field, temp, rows, columns):
-    for row in range(rows-1, -1, -1):
-        for column in range(columns):
-            if column + 2 < columns:
-                if field[row][column]['abbr'] != 'EM':
-                    match_length = 1
-                    while column + match_length < columns and field[row][column]['abbr'] == field[row][column + match_length]['abbr']:
-                        match_length += 1
-                    if match_length >= 3:
-                        for i in range(match_length):
-                            temp[row][column + i]['abbr'] = 'MM'
-                        print(f"Horizontal Match of {match_length} at row {row}, starting column {column}")
-    return temp
+def find_matches(field, rows, columns):
+    match_map = [[False for _ in range(columns)] for _ in range(rows)]
 
-def seek_for_vertical_match(field, temp, rows, columns):
-    for row in range(rows-1, -1, -1):
-        for column in range(columns):
-            if row >= 2:
-                if field[row][column]['abbr'] != 'EM':
-                    match_length = 1
-                    while row - match_length >= 0 and field[row][column]['abbr'] == field[row - match_length][column]['abbr']:
-                        match_length += 1
-                    if match_length >= 3:
-                        for i in range(match_length):
-                            temp[row - i][column]['abbr'] = 'MM'
-                        print(f"Vertical Match of {match_length} at column {column}, starting row {row}")
-    return temp
+    # Horizontal matches
+    for row in range(rows):
+        col = 0
+        while col < columns - 2:
+            abbr = field[row][col]['abbr']
+            if abbr != 'EM' and field[row][col+1]['abbr'] == abbr and field[row][col+2]['abbr'] == abbr:
+                start_col = col
+                while col < columns and field[row][col]['abbr'] == abbr:
+                    match_map[row][col] = True
+                    col += 1
+                print(f"Horizontal Match at row {row}, starting column {start_col}")
+            else:
+                col += 1
+
+    # Vertical matches
+    for col in range(columns):
+        row = rows - 1
+        while row >= 2:
+            abbr = field[row][col]['abbr']
+            if abbr != 'EM' and field[row-1][col]['abbr'] == abbr and field[row-2][col]['abbr'] == abbr:
+                start_row = row
+                while row >= 0 and field[row][col]['abbr'] == abbr:
+                    match_map[row][col] = True
+                    row -= 1
+                print(f"Vertical Match at column {col}, starting row {start_row}")
+            else:
+                row -= 1
+
+    return match_map
+
+def apply_matches(temp, match_map, rows, columns):
+    for row in range(rows):
+        for col in range(columns):
+            if match_map[row][col]:
+                temp[row][col]['abbr'] = 'MM'
 
 def clear_matches(field, temp, rows, columns):
     global match_made
@@ -375,7 +441,7 @@ def write_from_temp(field, temp): #This might be a thing of the past
     return field
 
 def spawn_brick_sprite(sprite_grid, row, column, brick_data): #I dont use this
-    brick = Brick(brick_data, row, column)
+    brick = Brick(brick_data, row, column,brick_image)
     sprite_grid[row][column] = brick
     all_bricks.add(brick)
 
@@ -456,14 +522,15 @@ def render_sprites(sprite_grid):
     for r in range(len(sprite_grid)):
         for c in range(len(sprite_grid[r])):
             sprite = sprite_grid[r][c]
-            #print(f"Sprite: {sprite}")
             if sprite is None:
                 continue
             sprite.update()
             sprite.draw(screen)
-            if sprite.is_in_dying_state() or sprite.is_in_match_state():
-                all_animations_complete = False
-    
+
+            # Check if the brick is in a dying state, match state, or falling
+            if sprite.is_in_dying_state() or sprite.is_in_match_state() or sprite.is_falling_state():
+                all_animations_complete = False  # If any animation is still ongoing, set this to False
+
     return all_animations_complete
 
 if __name__ == "__main__":

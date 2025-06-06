@@ -128,8 +128,11 @@ class Brick(pygame.sprite.Sprite):
         self.image.fill(color["rgb"])
         self.change_color_timer = 8
      
-    def draw(self, surface):
-        surface.blit(self.image, self.rect)
+    def draw(self, offset, surface):
+        # surface.blit(self.image, self.rect)
+        translated_rect = self.rect.copy()
+        translated_rect.topleft = (self.rect.left, self.rect.top + offset)
+        surface.blit(self.image, translated_rect)
 
     def is_animating(self):
         animating = self.is_dying or self.is_match or self.is_moving()
@@ -138,7 +141,7 @@ class Brick(pygame.sprite.Sprite):
         return animating
     
     def is_moving(self):
-        self.is_swapping = self.rect.x != self.target_x
+        #self.is_swapping = self.rect.x != self.target_x
         self.is_falling = self.rect.y < self.target_y #not if moving upward
         
         return self.is_swapping or self.is_falling 

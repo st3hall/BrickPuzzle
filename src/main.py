@@ -41,7 +41,7 @@ def main():
         elif isinstance(current_screen, PauseScreen):
             if not current_screen.game_paused:
                 game_paused = False
-
+ 
         elif isinstance(current_screen, GameScreen):
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 game_paused = True

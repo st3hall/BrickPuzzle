@@ -1,6 +1,7 @@
 import pygame
 import uuid
 import json
+from dataclasses import dataclass
 
 #Grid size
 COLUMNS = 6
@@ -13,6 +14,7 @@ OUTLINE_WIDTH = 1
 
 GAME_WIDTH = COLUMNS * CELL_SIZE
 GAME_HEIGHT = ROWS * CELL_SIZE
+
 
 def center(width, height):
     y = height / 2 
@@ -69,48 +71,81 @@ class Brick(pygame.sprite.Sprite):
         self.row = row
         self.column = column
         self.id = uuid.uuid4()
-
+        
+        self.clock = pygame.time.Clock()
+        self.clock.tick(60)
+        
         self.image = pygame.Surface([BRICK_WIDTH, BRICK_HEIGHT], pygame.SRCALPHA)
         self.image.fill(brick_data["rgb"])
         self.original_color = brick_data["rgb"]
 
-        pos_y = init_y + row * BRICK_HEIGHT #init_x,y is 0,0
-        pos_x = init_x + column * BRICK_WIDTH
+        #These are the starting positions for the bricks, init_x,y are 0,0 from settings set up.
+        pos_y = init_y + row * BRICK_HEIGHT 
+        pos_x = init_x + column * BRICK_WIDTH 
 
+        #This is just creating the rect for the brick.
         self.rect = self.image.get_rect()
         self.rect.topleft = (pos_x, pos_y)
-
-        self.target_y = pos_y
-        self.target_x = pos_x
         
-        self.fall_speed = 8
-        self.move_speed = 8
+        #This stores the previous position of the brick, used for animation.
+        self.previous_y = self.rect.y
 
-        self.is_dying = False
+        #This just creates a tartget position for the brick to move to. This gets used in the update method to move the brick.
+        self.target_y = 0
+        self.target_x = 0
+        
+        #Movement parameters
+        self.fall_speed = 10
+        self.move_speed = 8
         self.death_timer = 0
         self.scale_factor = 1.0
-        self.is_match = False
         self.change_color_timer = 0
-            
+        self.velocity_y = 0
+        self.gravity = 0.5
+        self.scroll_offset = 0
+        
+        self.is_dying = False
+        self.is_match = False
+        self.is_falling = False
+        self.is_swapping = False
+        self.is_scrolling = False
+
+    #This is how the brick moves to a new position, it sets the row and column and then calculates the target position based on the init_x,y.        
     def move_to_index(self, new_row, new_col):
         self.row = new_row
         self.column = new_col
+        #These targets are used in the update method to move the brick.
         self.target_x = init_x + new_col * BRICK_WIDTH
-        self.target_y = init_y + new_row * BRICK_HEIGHT
+        self.target_y = init_y + (new_row * BRICK_HEIGHT) - self.scroll_offset
 
     def start_dying(self):
         self.is_dying = True
-        self.death_timer = 15  # frames until the brick is removed
+        self.death_timer = 8  # frames until the brick is removed
         self.scale_factor = 1.0  # used for pop animation
     
     def match_made(self, color):
         self.is_match = True
         self.image.fill(color["rgb"])
-        self.change_color_timer = 15
+        self.change_color_timer = 8
      
-    def draw(self, surface):
-        surface.blit(self.image, self.rect)
+    def draw(self, offset, surface):
+        # surface.blit(self.image, self.rect)
+        translated_rect = self.rect.copy()
+        translated_rect.topleft = (self.rect.left, self.rect.top + offset)
+        surface.blit(self.image, translated_rect)
 
+    def is_animating(self):
+        animating = self.is_dying or self.is_match or self.is_moving()
+        #print(f"Moving: Falling:{self.is_falling}, Swapping:{self.is_swapping}")
+        #print(f"Animating: {animating}")
+        return animating
+    
+    def is_moving(self):
+        #self.is_swapping = self.rect.x != self.target_x
+        self.is_falling = self.rect.y < self.target_y #not if moving upward
+        
+        return self.is_swapping or self.is_falling 
+     
     def is_in_match_state(self):
         return self.is_match
 
@@ -118,11 +153,13 @@ class Brick(pygame.sprite.Sprite):
         return self.is_dying
     
     def update(self):
+        dt = self.clock.tick(60)/1000.0
         if self.is_match:
             if self.change_color_timer > 0:
                 self.change_color_timer -= 1
                 if self.change_color_timer == 0:
                     self.image.fill(self.original_color)
+                    self.is_match = False
     
         if self.is_dying:
             self.death_timer -= 1
@@ -144,7 +181,8 @@ class Brick(pygame.sprite.Sprite):
 
             if self.death_timer <= 0:
                 self.kill()  # Remove from all groups
-                
+                self.is_dying = False
+                   
         else:
             # Move in the x direction first
             if self.rect.x < self.target_x:
@@ -156,16 +194,60 @@ class Brick(pygame.sprite.Sprite):
                 if self.rect.x < self.target_x:
                     self.rect.x = self.target_x
 
-            # Only move in the y direction if the x position is correct
-            if self.rect.x == self.target_x:
-                if self.rect.y < self.target_y:
-                    self.rect.y += self.fall_speed
-                    if self.rect.y > self.target_y:
-                        self.rect.y = self.target_y
-                elif self.rect.y > self.target_y:
-                    self.rect.y -= self.fall_speed
+            #Once x is aligned, handle vertical movement
+            if self.rect.x == self.target_x:               
+                #if current.y is larger than target.y, moving up
+                    
+                if self.rect.y > self.target_y:
+                    print(f"Moving Up sprite: {self.row}, {self.column}")
+                    self.rect.y -= self.scroll_offset #Velociy is raise rate
+                    #After moving up is done, reset vel to 0
                     if self.rect.y < self.target_y:
                         self.rect.y = self.target_y
 
+                #Falling, but with the END target
+                #if current.y is less than target.y, moving down
+                if self.rect.y < self.target_y:
+                    self.velocity_y += self.gravity
+                    self.rect.y += self.velocity_y
+
+                    # Clamp to final target
+                    if self.rect.y > self.target_y:
+                        self.rect.y = max(self.rect.y-self.velocity_y, self.target_y)
+                        if self.rect.y == self.target_y:
+                            self.velocity_y = 0 
+
+
+
+class Screen:
+    def __init__(self, manager):
+        self.manager = manager
+        self.game_started = False
+        self.game_paused = False
+        self.game_over = False
+        self.score = 0
+        self.bricks = pygame.sprite.Group()
+        self.brick_data = COLORS_LIST
+        self.current_brick = None
+        self.next_brick = None
+        self.score_text = None
+        self.preview_text = None
+        self.font = pygame.font.Font(None, 36)
+    def handle_events(self, events):
+        pass
+
+    def update(self):
+        pass
+
+    def draw(self, screen):
+        pass
+
+#Im not sure if this is needed
+    # @dataclass 
+    # class GameState:
+    #     field: list
+    #     temp: list
+    #     sprite_grid: list
+    #     score: int
 
 

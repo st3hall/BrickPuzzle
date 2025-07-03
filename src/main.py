@@ -1,14 +1,16 @@
 from settings import *
-from grid import *
+from puzzle_grids import *
 
 import pygame
 import random
 import copy
 import json
 from screen_manager import ScreenManager
-from home_screen import HomeScreen
+#from home_screen import HomeScreen
 from pause_screen import PauseScreen
 from game_screen import GameScreen
+from puzzle_screen import PuzzleScreen
+from home_screen_buttons import HomeScreen
 
 pygame.init()
 
@@ -28,24 +30,33 @@ def main():
             if event.type == pygame.QUIT:
                 run = False
             
-        manager.handle_events(events)
+            manager.handle_events(events)
 
-        current_screen = manager.current_screen
+            current_screen = manager.current_screen
 
-        if isinstance(current_screen, HomeScreen):
-            if current_screen.game_started:
-                game_started = True
-                game_paused = False
-                manager.set_screen(GameScreen(manager))
+            if isinstance(current_screen, HomeScreen):
+                if current_screen.game_started:
+                    game_started = True
+                    game_paused = False
+                    manager.set_screen(GameScreen(manager))
 
-        elif isinstance(current_screen, PauseScreen):
-            if not current_screen.game_paused:
-                game_paused = False
- 
-        elif isinstance(current_screen, GameScreen):
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                game_paused = True
-                manager.set_screen(PauseScreen(manager))
+            elif isinstance(current_screen, PauseScreen):
+                if not current_screen.game_paused:
+                    game_paused = False
+    
+            elif isinstance(current_screen, GameScreen):
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    print(f"Key Down")
+                    game_paused = True
+                    manager.set_screen(PauseScreen(manager))
+                    print("You should be paused")
+            
+            elif isinstance(current_screen, PuzzleScreen):
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    print(f"Key Down")
+                    game_paused = True
+                    manager.set_screen(PauseScreen(manager))
+                    print("You should be paused")
 
         # Update and draw the current screen 
         manager.update()
@@ -59,4 +70,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

@@ -914,3 +914,132 @@ else:
 Additionally when the offset is a couple pixles away from the CELL SIZE the cause the bricks to shake a little bit. So add a little shake method for the sprite.
 
 
+import random
+import uuid
+
+def add_new_row(field, temp, sprite_grid, rows, columns, brick_colors, all_bricks=None):
+    for column in range(columns):
+        if field[0][column]['abbr'] != 'EM':
+            print(f"Game Over, Hit at: {field[0][column]['abbr']}")
+            return field, temp, sprite_grid, all_bricks
+
+    for row in range(rows - 1):
+        for column in range(columns):
+            temp[row][column] = temp[row + 1][column]
+            field[row][column] = field[row + 1][column]
+            sprite_grid[row][column] = sprite_grid[row + 1][column]
+
+    new_temp_row = []
+    new_field_row = []
+    new_sprite_row = []
+
+    for column in range(columns):
+        brick_color = random.choice(brick_colors)
+        brick_data = brick_color.copy()
+        brick_data["id"] = str(uuid.uuid4())
+        brick = Brick(brick_data, rows - 1, column)
+
+        if all_bricks is not None:
+            all_bricks.add(brick)
+
+        new_temp_row.append(brick_data)
+        new_field_row.append(brick_data)
+        new_sprite_row.append(brick)
+
+    temp[rows - 1] = new_temp_row
+    field[rows - 1] = new_field_row
+    sprite_grid[rows - 1] = new_sprite_row
+
+    return field, temp, sprite_grid, all_bricks
+pygame.event.post(pygame.event.Event(pygame.QUIT))
+
+
+
+def add_new_row(field, temp, sprite_grid, rows, columns, brick_colors, all_bricks=None):
+    # Shift all rows up by one
+    for row in range(rows - 1):
+        for column in range(columns):
+            temp[row][column] = temp[row + 1][column]
+            field[row][column] = field[row + 1][column]
+            sprite_grid[row][column] = sprite_grid[row + 1][column]
+
+    # Check for game over condition in the new top row
+    for column in range(columns):
+        if temp[0][column]['abbr'] != 'EM':
+            print(f"Game Over, Hit at: {field[0][column]['abbr']}")
+            pygame.event.post(pygame.event.Event(pygame.QUIT))
+            return field, temp, sprite_grid, all_bricks
+
+    # Create a new row of bricks for the bottom row
+    new_temp_row = []
+    new_field_row = []
+    new_sprite_row = []
+
+    for column in range(columns):
+        brick_color = random.choice(brick_colors)
+        brick_data = brick_color.copy()
+        brick_data["id"] = str(uuid.uuid4())
+        brick = Brick(brick_data, rows - 1, column)
+
+        if all_bricks is not None:
+            all_bricks.add(brick)
+
+        new_temp_row.append(brick_data)
+        new_field_row.append(brick_data)
+        new_sprite_row.append(brick)
+
+    # Assign the new row to the bottom of the grid
+    temp[rows - 1] = new_temp_row
+    field[rows - 1] = new_field_row
+    sprite_grid[rows - 1] = new_sprite_row
+
+    return field, temp, sprite_grid, all_bricks
+
+
+if self.state == "scrolling":
+    self.scroll_offset -= self.scroll_speed * dt
+
+    if round(self.scroll_offset % BRICK_HEIGHT) == 0 and not self.row_added:
+        self.temp, self.field, self.sprite_grid = add_new_row(
+            self.field, self.temp, self.sprite_grid, ROWS, COLUMNS, COLORS_LIST, self.all_bricks
+        )
+
+        print(f"FULL ROW RAISED: {self.scroll_offset}")
+        print_data_to_console(self.field, self.temp, self.sprite_grid, self.all_bricks)
+
+        self.scroll_offset += BRICK_HEIGHT
+        self.row_added = True
+
+    # Reset flag only when scroll_offset is no longer aligned
+    elif round(self.scroll_offset % BRICK_HEIGHT) != 0:
+        self.row_added = False
+
+
+def draw_vertical_gradient(surface, top_color, bottom_color, rect):
+    x, y, width, height = rect
+    for i in range(height):
+        ratio = i / height
+        r = int(top_color[0] * (1 - ratio) + bottom_color[0] * ratio)
+        g = int(top_color[1] * (1 - ratio) + bottom_color[1] * ratio)
+        b = int(top_color[2] * (1 - ratio) + bottom_color[2] * ratio)
+        pygame.draw.line(surface, (r, g, b), (x, y + i), (x + width, y + i))
+
+
+# Your color definitions
+Y = {"name": "YELLOW", "hex": "#fed86dff", "abbr": "Y", "rgb": (254, 216, 109), "value": 1}
+R = {"name": "RED", "hex": "#de6568ff", "abbr": "R", "rgb": (222, 101, 104), "value": 2}
+B = {"name": "BLUE", "hex": "#6f9fe9ff", "abbr": "B", "rgb": (111, 159, 233), "value": 3}
+G = {"name": "GREEN", "hex": "#94c47fff", "abbr": "G", "rgb": (148, 196, 127), "value": 4}
+L = {"name": "LIGHT_GRAY", "hex": "#d0e0e3ff", "abbr": "L", "rgb": (208, 224, 227), "value": 5}
+P = {"name": "PURPLE", "hex": "#8e7dc1ff", "abbr": "P", "rgb": (142, 125, 193), "value": 6}
+W = {"name": "WHITE", "hex": "#ffffffff", "abbr": "W", "rgb": (255, 255, 255), "value": 7}
+DG = {"name": "DARK_GREY", "hex": "#595959ff", "abbr": "DG", "rgb": (89, 89, 89), "value": 8}
+BK = {"name": "BLACK", "hex": "#000000ff", "abbr": "BK", "rgb": (0, 0, 0), "value": 9}
+EMPTY = {"name": "EMPTY", "hex": "#525252", "abbr": "EM", "rgb": (82, 82, 82, 50), "value": 0}
+MATCH_MADE = {"name": "MATCH_MADE", "hex": "#FBFFB9", "abbr": "MM", "rgb": (251, 255, 185), "value": 10}
+
+# Create a lookup dictionary
+color_lookup = {color["abbr"]: color["rgb"] for color in [Y, R, B, G, L, P, W, DG, BK, EMPTY, MATCH_MADE]}
+
+# Example: get RGB for 'B'
+rgb_value = color_lookup['B']  # Output: (111, 159, 233)

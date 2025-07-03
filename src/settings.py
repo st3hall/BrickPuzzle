@@ -46,6 +46,8 @@ BLOCK_OFFSET = pygame.Vector2(COLUMNS // 2, -1)
 
 #Colors
 
+BACK_GROUND = (64, 64, 64) #Dark Gray
+
 Y = {"name": "YELLOW", "hex": "#fed86dff", "abbr": "Y", "rgb": (254, 216, 109), "value": 1}
 R = {"name": "RED", "hex": "#de6568ff", "abbr": "R", "rgb": (222, 101, 104), "value": 2}
 B = {"name": "BLUE", "hex": "#6f9fe9ff", "abbr": "B", "rgb": (111, 159, 233), "value": 3}
@@ -74,11 +76,20 @@ class Brick(pygame.sprite.Sprite):
         
         self.clock = pygame.time.Clock()
         self.clock.tick(60)
-        
-        self.image = pygame.Surface([BRICK_WIDTH, BRICK_HEIGHT], pygame.SRCALPHA)
-        self.image.fill(brick_data["rgb"])
-        self.original_color = brick_data["rgb"]
 
+        # Create the surface with alpha
+        self.image = pygame.Surface([BRICK_WIDTH, BRICK_HEIGHT], pygame.SRCALPHA)
+        # Fill with base color
+        base_color = brick_data["rgb"]
+        self.image.fill(base_color)
+        # Store original color
+        self.original_color = base_color
+        # Create a darker version of the color for the outline
+        darker_color = tuple(max(0, c - 40) for c in base_color)
+        # Draw the outline
+        pygame.draw.rect(self.image, BK['rgb'], self.image.get_rect(), width=1)
+        pygame.draw.rect(self.image, darker_color, self.image.get_rect().inflate(-2,-2), width=2)
+        
         #These are the starting positions for the bricks, init_x,y are 0,0 from settings set up.
         pos_y = init_y + row * BRICK_HEIGHT 
         pos_x = init_x + column * BRICK_WIDTH 

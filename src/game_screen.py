@@ -1,8 +1,8 @@
 from settings import *
-from grid import *
+from puzzle_grids import *
 import pygame
 import random
-from home_screen import HomeScreen
+from home_screen import*
 
 
 class GameScreen(Screen):
@@ -12,7 +12,10 @@ class GameScreen(Screen):
         self.matches_found = False
         self.match_made = False
         self.all_bricks = pygame.sprite.Group()
-        self.background = pygame.image.load('images/hill-country-braun-sunrise.jpg')
+        self.background = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
+        self.background.fill(BACK_GROUND)
+
+        #self.background = pygame.image.load('images/hill-country-braun-sunrise.jpg')
         self.move_delay = 150
         self.cursor_index_y = ROWS // 2
         self.cursor_index_x = COLUMNS // 2
@@ -119,7 +122,7 @@ class GameScreen(Screen):
         print_data_to_console(self.field, self.temp, self.sprite_grid, self.all_bricks)
 
     def draw(self, surface):
-        surface.blit(self.background, (-center_of_window_x, -center_of_field_y))
+        surface.blit(self.background, (0,0))#(-center_of_window_x, -center_of_field_y))
         draw_sprites(self.sprite_grid, self.scroll_offset, surface)
         # Add scroll offset
         x = init_x + (self.cursor_index_x * BRICK_WIDTH) 

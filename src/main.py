@@ -11,6 +11,7 @@ from pause_screen import PauseScreen
 from game_screen import GameScreen
 from puzzle_screen import PuzzleScreen
 from home_screen_buttons import HomeScreen
+import asyncio #for online game functionality
 
 pygame.init()
 
@@ -19,18 +20,18 @@ clock = pygame.time.Clock()
 manager = ScreenManager()
 manager.set_screen(HomeScreen(manager))
 
-def main():
+async def main():
     run = True
     game_started = False
     game_paused = False
 
     while run:
         events = pygame.event.get()
+        manager.handle_events(events)
+        
         for event in events:
             if event.type == pygame.QUIT:
-                run = False
-            
-            manager.handle_events(events)
+                run = False           
 
             current_screen = manager.current_screen
 
@@ -62,11 +63,11 @@ def main():
         manager.update()
         manager.draw(screen)
 
-
         pygame.display.flip()
         clock.tick(60)
-
+        await asyncio.sleep(0)
+        
     pygame.quit()
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

@@ -2,7 +2,7 @@ from settings import *
 from puzzle_grids import *
 import pygame
 import random
-from home_screen import*
+from home_screen_buttons import*
 
 
 class GameScreen(Screen):
@@ -32,6 +32,7 @@ class GameScreen(Screen):
         self.scroll_offset = 0
         self.time_since_last_row = 0
         self.row_interval = 2
+        self.current_row_raised = 0
         self.clock = pygame.time.Clock()
         dt = self.clock.tick(60)/1000
         
@@ -61,7 +62,7 @@ class GameScreen(Screen):
         keys = pygame.key.get_pressed()
 
         self.cursor_index_y, self.cursor_index_x, self.last_move_time = update_cursor_position(
-            keys, self.player_pos, self.cursor_index_x, self.cursor_index_y, self.last_move_time, self.move_delay
+            keys, self.player_pos, self.cursor_index_x, self.cursor_index_y, self.last_move_time, self.move_delay, self.current_row_raised
         )
         if self.swap_occurred:
             self.swap_occurred = False
@@ -146,39 +147,44 @@ class GameScreen(Screen):
 
         self.clock.tick(60)
         fps = str(int(self.clock.get_fps()))
-        font = pygame.font.Font(None, 36)
+        font = pygame.font.SysFont(DEFAULT_FONT, 24)
         text = font.render(f"FPS: {fps}", True, (255, 255, 255))
         text_rect = text.get_rect(topleft=(10, 10))
-        surface.blit(text, text_rect)
+        #surface.blit(text, text_rect)
 
         score = str(int(self.score))
-        font = pygame.font.Font(None, 36)
+        font = pygame.font.SysFont(DEFAULT_FONT, 24)
         text = font.render(f"Score: {score}", True, (255, 255, 255))
         text_rect = text.get_rect(topright=(WINDOW_WIDTH-10, 10))
         surface.blit(text, text_rect)
 
 
-def update_cursor_position(keys, player_pos, cursor_index_x, cursor_index_y, last_move_time, move_delay):
+def update_cursor_position(keys, player_pos, cursor_index_x, cursor_index_y, last_move_time, move_delay, current_row_raised = 0):
     current_time = pygame.time.get_ticks()
 
     if current_time - last_move_time > move_delay:
-        #UP
-        ## Could get rid of most of the player_pos stuff
+        visible_rows = GAME_HEIGHT // BRICK_HEIGHT
+
+        # Logical max row index the player can move to
+        max_cursor_index_y = current_row_raised + visible_rows - 1
+
+        # Logical min row index (topmost visible row)
+        min_cursor_index_y = current_row_raised
+
+        # UP
         if keys[pygame.K_w]:
-            # if player_pos.y <= (center_of_window_y - (GAME_HEIGHT / 2)):
-            #     player_pos.y -= 0
-            # else:
-            player_pos.y -= BRICK_HEIGHT
-            cursor_index_y -= 1
-            last_move_time = current_time
-        #DOWN
+            if cursor_index_y > min_cursor_index_y:
+                cursor_index_y -= 1
+                player_pos.y -= BRICK_HEIGHT
+                last_move_time = current_time
+
+        # DOWN
         if keys[pygame.K_s]:
-            # if player_pos.y >= (center_of_window_y + (GAME_HEIGHT / 2) - BRICK_HEIGHT):
-            #     player_pos.y += 0
-            # else:
-            player_pos.y += BRICK_HEIGHT
-            cursor_index_y += 1
-            last_move_time = current_time
+            if cursor_index_y < max_cursor_index_y:
+                cursor_index_y += 1
+                player_pos.y += BRICK_HEIGHT
+                last_move_time = current_time
+
         #LEFT
         if keys[pygame.K_a]:
             # if player_pos.x <= (center_of_window_x - (GAME_WIDTH / 2) + BRICK_WIDTH):
@@ -199,9 +205,35 @@ def update_cursor_position(keys, player_pos, cursor_index_x, cursor_index_y, las
     return cursor_index_y, cursor_index_x, last_move_time
 
 def draw_cursor(pos_x, pos_y, width, height, screen): #Make a sprite?
-    rect = pygame.Rect(pos_x, pos_y, width+4, height+4)
-    pygame.draw.rect(screen, DG["hex"], rect.move(-width-2,0), width=4)
-    pygame.draw.rect(screen, DG["hex"], rect.move(-2,0), width=4)
+    
+    # Base rectangle for the cursor
+    rect = pygame.Rect(pos_x, pos_y, width + 4, height + 4)
+    cursor_rect_L = rect.move(-width - 2, -2)
+    cursor_rect_R = rect.move(- 2, -2)
+    
+    # Outer outline (slightly larger, Black)
+    darker_color = tuple(max(0, c - 40) for c in DG["rgb"])
+    outer_outline_L = cursor_rect_L.move(width//2,0).inflate(width, 2)
+    outer_outline_R = cursor_rect_R.inflate(2, 2)
+
+    pygame.draw.rect(screen, darker_color, outer_outline_L, width=2)
+    # pygame.draw.rect(screen, darker_color, outer_outline_R, width=2)
+    
+    # Main cursor border (slightly lighter)
+    main_color = tuple(max(0, c + 40) for c in DG["rgb"])
+    pygame.draw.rect(screen, main_color, cursor_rect_L, width=4)
+    pygame.draw.rect(screen, main_color, cursor_rect_R, width=4)
+
+    # Inner outline (slightly smaller, optional)
+    lighter_color = tuple(max(0, c + 80) for c in DG["rgb"])
+    inner_outline_L = cursor_rect_L.inflate(-2, -2)
+    inner_outline_R = cursor_rect_R.inflate(-2, -2) 
+    pygame.draw.rect(screen, lighter_color, inner_outline_L, width=2)
+    pygame.draw.rect(screen, lighter_color, inner_outline_R, width=2)
+
+    
+    # pygame.draw.rect(screen, DG["rgb"], rect.move(-2,-2), width=4)
+
 
 def initial_run(brick_colors, all_bricks=None, row_from_top = 0):
     field = []

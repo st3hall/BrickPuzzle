@@ -3,7 +3,7 @@ from settings import*
 from game_screen import GameScreen
 import math
 
-class PauseScreen(Screen):
+class HowToScreen(Screen):
     def __init__(self, manager):
         super().__init__(manager)
         self.color_shift = 0
@@ -20,10 +20,7 @@ class PauseScreen(Screen):
         
 
         self.buttons = [
-            Button((center_x, button_y_start, button_width, button_height), "Return Home", self.return_home, font_small, button_color_base, button_color_hover),
-            Button((center_x, button_y_start + 70, button_width, button_height), "Puzzle Select", self.start_puzzle_select, font_small, button_color_base, button_color_hover),
-            Button((center_x, button_y_start + 140, button_width, button_height), "Resume", self.resume_game, font_small, G['rgb'], tuple(min(255, c + 30) for c in G['rgb'])),
-            Button((center_x, button_y_start + 210, button_width, button_height), "Quit", self.quit_game, font_small, R['rgb'], tuple(min(255, c + 30) for c in R['rgb']))
+            Button((center_x, button_y_start + 300, button_width, button_height), "Back", self.return_home, font_small, button_color_base, button_color_hover),
         ]
     
     def resume_game(self):
@@ -64,9 +61,39 @@ class PauseScreen(Screen):
         screen.fill((BACK_GROUND))
 
         title_font = pygame.font.SysFont(DEFAULT_FONT, 60)
-        title_text = title_font.render("Bricks", True, L['rgb'])
+        title_text = title_font.render("How To Play", True, L['rgb'])
         title_rect = title_text.get_rect(center=(WINDOW_WIDTH // 2, 150))
+
+        credits_font = pygame.font.SysFont(DEFAULT_FONT, 12)
+        credits_text = credits_font.render("Steven Hall 2025 | stevenhall1986@yahoo.com", True, L['rgb'])
+        credits_rect = credits_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT -30))
+
+        # Body text lines
+        body_font = pygame.font.SysFont(DEFAULT_FONT, 18)
+        instructions = [
+            "Move with W, A, S, D.",
+            "You can only swap bricks horizontally.",
+            "W - UP", 
+            "A - LEFT", 
+            "S - DOWN", 
+            "D - RIGHT",
+            "SPACEBAR - SWAP"
+        ]
+
+        # Starting position for body text (left-aligned)
+        body_x = WINDOW_WIDTH //2
+        body_y = title_rect.bottom + 40  # space below the title
+
+        # Render and position each line
+        for line in instructions:
+            line_surface = body_font.render(line, True, L['rgb'])
+            line_rect = line_surface.get_rect(center=(body_x, body_y))
+            screen.blit(line_surface, line_rect)
+            body_y += line_surface.get_height() + 10  # spacing between lines
+
+        # Draw the title last (or first, depending on layering)
         screen.blit(title_text, title_rect)
+        screen.blit(credits_text, credits_rect)
 
         for button in self.buttons:
             button.draw(screen)

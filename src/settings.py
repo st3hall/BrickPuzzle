@@ -11,6 +11,7 @@ CELL_SIZE = 40   #formerly Brick Width
 BRICK_WIDTH = 40
 BRICK_HEIGHT = 40
 OUTLINE_WIDTH = 1
+DEFAULT_FONT = 'arialblack'
 
 GAME_WIDTH = COLUMNS * CELL_SIZE
 GAME_HEIGHT = ROWS * CELL_SIZE
@@ -86,8 +87,9 @@ class Brick(pygame.sprite.Sprite):
         self.original_color = base_color
         # Create a darker version of the color for the outline
         darker_color = tuple(max(0, c - 40) for c in base_color)
+        outline_color = tuple(max(0, c - 120) for c in base_color)
         # Draw the outline
-        pygame.draw.rect(self.image, BK['rgb'], self.image.get_rect(), width=1)
+        pygame.draw.rect(self.image, outline_color, self.image.get_rect(), width=1)
         pygame.draw.rect(self.image, darker_color, self.image.get_rect().inflate(-2,-2), width=2)
         
         #These are the starting positions for the bricks, init_x,y are 0,0 from settings set up.
@@ -243,7 +245,7 @@ class Screen:
         self.next_brick = None
         self.score_text = None
         self.preview_text = None
-        self.font = pygame.font.Font(None, 36)
+        self.font = pygame.font.SysFont(DEFAULT_FONT, 36)
     def handle_events(self, events):
         pass
 

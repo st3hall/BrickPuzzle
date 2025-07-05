@@ -1,7 +1,7 @@
 from settings import *
 import pygame
 import random
-from home_screen import HomeScreen
+from home_screen_buttons import *
 from game_screen import *
 from puzzle_grids import *
 
@@ -47,7 +47,31 @@ class PuzzleScreen(Screen):
         self.field = result['temp']
         self.field, self.sprite_grid = sync_temp_to_sprites(self.field, self.temp, self.sprite_grid, "Clear", False)
 
+                #Retry Button   
+        font_small = pygame.font.SysFont(DEFAULT_FONT, 24)
+        button_width = 150
+        button_height = 30
+        center_x = (WINDOW_WIDTH - button_width) // 2
+        button_y_start = 20
+
+        self.buttons = [
+            Button((center_x, button_y_start, button_width, button_height), "Restart", self.retry_puzzle, font_small, R['rgb'], tuple(min(255, c + 30) for c in R['rgb']))
+        ]
+    
+    def retry_puzzle(self):
+        self.moves_count = 0
+        self.field, self.temp, self.sprite_grid, self.all_bricks, self.moves_available = initial_run_puzzle(COLORS_LIST, self.all_bricks, self.puzzle_number)
+
     def handle_events(self, events):
+        mouse_pos = pygame.mouse.get_pos()
+        for button in self.buttons:
+            button.check_hover(mouse_pos)
+
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                for button in self.buttons:
+                    button.check_click(event.pos)
+
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and not self.cursor_swap_done:
@@ -99,6 +123,7 @@ class PuzzleScreen(Screen):
             del self.next_state
         
         result = check_if_done(self.field, self.moves_count, self.moves_available)
+                
         if result in ["complete", "retry"]:
             if result == "complete":
                 print(f"Puzzle complete!")
@@ -136,15 +161,20 @@ class PuzzleScreen(Screen):
         moves_left = self.moves_available - self.moves_count
         self.clock.tick(60)
         fps = str(int(self.clock.get_fps()))
-        font = pygame.font.Font(None, 36)
-        text = font.render(f"Remaining Moves: {moves_left}", True, (255, 255, 255))
+        font = pygame.font.SysFont(DEFAULT_FONT, 24)
+        text = font.render(f"Moves: {moves_left}", True, L['rgb'])
         text_rect = text.get_rect(topleft=(10, 20))
         surface.blit(text, text_rect)
 
-        font = pygame.font.Font(None, 36)
-        text = font.render(f"Puzzle #: {self.puzzle_number}", True, (255, 255, 255))
+        font = pygame.font.SysFont(DEFAULT_FONT, 24)
+        text = font.render(f"Puzzle #: {self.puzzle_number}", True, L['rgb'])
         text_rect = text.get_rect(topright=(WINDOW_WIDTH-10, 20))
         surface.blit(text, text_rect)
+        
+        for button in self.buttons:
+            button.draw(surface)
+       
+
 
 def get_puzzle(puzzle_dict, number=1):
     key = f"puzzle_{number}"
@@ -197,6 +227,7 @@ def check_if_done(field, moves, moves_available):
     else:
         print("No more moves available. Retry?")
         return "retry"
+    
  
 def load_new_puzzle(self, puzzle_dict, next_number):
     key = f"puzzle_{next_number}"

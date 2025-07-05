@@ -11,7 +11,7 @@ class PuzzleSelectScreen(Screen):
         self.puzzles_per_row = puzzles_per_row
         self.buttons = []
 
-        font_small = pygame.font.Font(None, 36)
+        font_small = pygame.font.SysFont(DEFAULT_FONT, 24)
         button_width = 50
         button_height = 50
         padding = 10
@@ -32,8 +32,8 @@ class PuzzleSelectScreen(Screen):
                     f"{puzzle_id}",
                     lambda pid=puzzle_id: self.load_puzzle(pid),
                     font_small,
-                    (0, 100, 200),
-                    (0, 150, 255)
+                    B['rgb'],
+                    tuple(min(255, c + 30) for c in B['rgb'])
                 )
             )
 
@@ -56,13 +56,14 @@ class PuzzleSelectScreen(Screen):
         self.color_shift += 1
 
     def draw(self, screen):
-        r = int((math.sin(self.color_shift * 0.02) + 1) * 127.5)
-        g = int((math.sin(self.color_shift * 0.02 + 2) + 1) * 127.5)
-        b = int((math.sin(self.color_shift * 0.02 + 4) + 1) * 127.5)
-        screen.fill((r, g, b))
+        # r = int((math.sin(self.color_shift * 0.02) + 1) * 127.5)
+        # g = int((math.sin(self.color_shift * 0.02 + 2) + 1) * 127.5)
+        # b = int((math.sin(self.color_shift * 0.02 + 4) + 1) * 127.5)
+        # screen.fill((r, g, b))
+        screen.fill((BACK_GROUND))
 
-        title_font = pygame.font.Font(None, 64)
-        title_text = title_font.render("Select a Puzzle", True, (255, 255, 255))
+        title_font = pygame.font.SysFont(DEFAULT_FONT, 48)
+        title_text = title_font.render("Select a Puzzle", True, L['rgb'])
         title_rect = title_text.get_rect(center=(WINDOW_WIDTH // 2, 100))
         screen.blit(title_text, title_rect)
 
@@ -82,7 +83,7 @@ class Button:
     def draw(self, screen):
         color = self.hover_color if self.hovered else self.base_color
         pygame.draw.rect(screen, color, self.rect, border_radius=8)
-        text_surf = self.font.render(self.text, True, (255, 255, 255))
+        text_surf = self.font.render(self.text, True, L['rgb'])
         text_rect = text_surf.get_rect(center=self.rect.center)
         screen.blit(text_surf, text_rect)
 

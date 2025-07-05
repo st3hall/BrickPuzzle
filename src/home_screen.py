@@ -42,12 +42,12 @@ class HomeScreen(Screen):
         b = int((math.sin(self.color_shift * 0.02 + 4) + 1) * 127.5)
         screen.fill((r, g, b))
 
-        font = pygame.font.Font(None, 74)
+        font = pygame.font.SysFont(DEFAULT_FONT, 74)
         text = font.render("Home Screen", True, (255, 255, 255))
         text_rect = text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2))
         screen.blit(text, text_rect)
 
-        font = pygame.font.Font(None, 36)
+        font = pygame.font.SysFont(DEFAULT_FONT, 36)
         text = font.render("Press Enter to Start Endless Mode", True, (255, 255, 255))
         text_rect = text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 50))
         screen.blit(text, text_rect)

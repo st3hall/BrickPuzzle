@@ -36,14 +36,26 @@ class GameScreen(Screen):
         self.clock = pygame.time.Clock()
         dt = self.clock.tick(60)/1000
         
-        
-        # Initialize your game field
+                # Initialize your game field
         self.field, self.temp, self.sprite_grid, self.all_bricks = initial_run(COLORS_LIST, self.all_bricks, row_from_top=3)
         print_data_to_console(self.field, self.temp, self.sprite_grid, self.all_bricks)
 
         result = update_grid(self.field, self.temp, "Match", False)
         self.field = result['temp']
         self.field, self.sprite_grid = sync_temp_to_sprites(self.field, self.temp, self.sprite_grid, "Clear", False)
+
+            # Initialize buttons
+        font_small = pygame.font.SysFont(DEFAULT_FONT, 18)
+        button_width = 80
+        button_height = 30
+        center_x = (WINDOW_WIDTH - button_width) // 2
+        button_y_start = 20
+        button_spacing = button_width //2 + 5
+
+        self.buttons = [
+            Button((center_x + (button_spacing), button_y_start, button_width, button_height), "Pause", self.pause_game, font_small, G['rgb'], tuple(min(255, c + 30) for c in G['rgb'])),
+            Button((center_x - (button_spacing), button_y_start, button_width, button_height), "Quit", self.return_home, font_small, R['rgb'], tuple(min(255, c + 30) for c in R['rgb']))
+        ]
 
     def handle_events(self, events):
         for event in events:
@@ -56,6 +68,15 @@ class GameScreen(Screen):
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_SPACE:
                     self.cursor_swap_done = False
+
+            mouse_pos = pygame.mouse.get_pos()
+            for button in self.buttons:
+                button.check_hover(mouse_pos)
+
+            for event in events:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    for button in self.buttons:
+                        button.check_click(event.pos)
 
     def update(self): 
         dt = self.clock.tick(60) / 1000   
@@ -121,6 +142,23 @@ class GameScreen(Screen):
             del self.next_state
             
         print_data_to_console(self.field, self.temp, self.sprite_grid, self.all_bricks)
+            
+    def return_home(self):
+        from home_screen_buttons import HomeScreen
+        self.manager.set_screen(HomeScreen(self.manager))
+    
+    def return_to_select(self): #Not used here, only in puzzle
+        from puzzle_select_screen import PuzzleSelectScreen
+        self.manager.set_screen(PuzzleSelectScreen(self.manager))
+    
+    def pause_game(self):
+        from pause_screen import PauseScreen
+        self.manager.set_screen(PauseScreen(self.manager))
+        game_paused = True
+
+    def retry_puzzle(self):
+        self.moves_count = 0
+        self.field, self.temp, self.sprite_grid, self.all_bricks, self.moves_available = initial_run_puzzle(COLORS_LIST, self.all_bricks, self.puzzle_number)
 
     def draw(self, surface):
         surface.blit(self.background, (0,0))#(-center_of_window_x, -center_of_field_y))
@@ -153,11 +191,13 @@ class GameScreen(Screen):
         #surface.blit(text, text_rect)
 
         score = str(int(self.score))
-        font = pygame.font.SysFont(DEFAULT_FONT, 24)
+        font = pygame.font.SysFont(DEFAULT_FONT, 20)
         text = font.render(f"Score: {score}", True, (255, 255, 255))
         text_rect = text.get_rect(topright=(WINDOW_WIDTH-10, 10))
         surface.blit(text, text_rect)
 
+        for button in self.buttons:
+            button.draw(surface)
 
 def update_cursor_position(keys, player_pos, cursor_index_x, cursor_index_y, last_move_time, move_delay, current_row_raised = 0):
     current_time = pygame.time.get_ticks()
@@ -233,7 +273,6 @@ def draw_cursor(pos_x, pos_y, width, height, screen): #Make a sprite?
 
     
     # pygame.draw.rect(screen, DG["rgb"], rect.move(-2,-2), width=4)
-
 
 def initial_run(brick_colors, all_bricks=None, row_from_top = 0):
     field = []

@@ -48,16 +48,22 @@ class PuzzleScreen(Screen):
         self.field, self.sprite_grid = sync_temp_to_sprites(self.field, self.temp, self.sprite_grid, "Clear", False)
 
                 #Retry Button   
-        font_small = pygame.font.SysFont(DEFAULT_FONT, 24)
-        button_width = 150
+        font_small = pygame.font.SysFont(DEFAULT_FONT, 18)
+        button_width = 80
         button_height = 30
         center_x = (WINDOW_WIDTH - button_width) // 2
         button_y_start = 20
+        button_spacing = button_width //2 + 5
 
         self.buttons = [
-            Button((center_x, button_y_start, button_width, button_height), "Restart", self.retry_puzzle, font_small, R['rgb'], tuple(min(255, c + 30) for c in R['rgb']))
+            Button((center_x - (button_spacing), button_y_start, button_width, button_height), "Select", self.return_to_select, font_small, G['rgb'], tuple(min(255, c + 30) for c in G['rgb'])),
+            Button((center_x + (button_spacing), button_y_start, button_width, button_height), "Restart", self.retry_puzzle, font_small, R['rgb'], tuple(min(255, c + 30) for c in R['rgb']))
         ]
     
+    def return_to_select(self):
+        from puzzle_select_screen import PuzzleSelectScreen
+        self.manager.set_screen(PuzzleSelectScreen(self.manager))
+
     def retry_puzzle(self):
         self.moves_count = 0
         self.field, self.temp, self.sprite_grid, self.all_bricks, self.moves_available = initial_run_puzzle(COLORS_LIST, self.all_bricks, self.puzzle_number)
@@ -161,12 +167,12 @@ class PuzzleScreen(Screen):
         moves_left = self.moves_available - self.moves_count
         self.clock.tick(60)
         fps = str(int(self.clock.get_fps()))
-        font = pygame.font.SysFont(DEFAULT_FONT, 24)
+        font = pygame.font.SysFont(DEFAULT_FONT, 20)
         text = font.render(f"Moves: {moves_left}", True, L['rgb'])
         text_rect = text.get_rect(topleft=(10, 20))
         surface.blit(text, text_rect)
 
-        font = pygame.font.SysFont(DEFAULT_FONT, 24)
+        font = pygame.font.SysFont(DEFAULT_FONT, 20)
         text = font.render(f"Puzzle #: {self.puzzle_number}", True, L['rgb'])
         text_rect = text.get_rect(topright=(WINDOW_WIDTH-10, 20))
         surface.blit(text, text_rect)
@@ -174,8 +180,6 @@ class PuzzleScreen(Screen):
         for button in self.buttons:
             button.draw(surface)
        
-
-
 def get_puzzle(puzzle_dict, number=1):
     key = f"puzzle_{number}"
     puzzle = puzzle_dict.get(key)
@@ -227,8 +231,7 @@ def check_if_done(field, moves, moves_available):
     else:
         print("No more moves available. Retry?")
         return "retry"
-    
- 
+     
 def load_new_puzzle(self, puzzle_dict, next_number):
     key = f"puzzle_{next_number}"
     if key in puzzle_dict:

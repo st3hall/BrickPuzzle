@@ -16,8 +16,7 @@ class PauseScreen(Screen):
         button_y_start = 200
         button_color_base = B['rgb']
         button_color_hover = tuple(min(255, c + 30) for c in button_color_base)
-
-        
+  
 
         self.buttons = [
             Button((center_x, button_y_start, button_width, button_height), "Return Home", self.return_home, font_small, button_color_base, button_color_hover),
@@ -25,7 +24,7 @@ class PauseScreen(Screen):
             Button((center_x, button_y_start + 140, button_width, button_height), "Resume", self.resume_game, font_small, G['rgb'], tuple(min(255, c + 30) for c in G['rgb'])),
             Button((center_x, button_y_start + 210, button_width, button_height), "Quit", self.quit_game, font_small, R['rgb'], tuple(min(255, c + 30) for c in R['rgb']))
         ]
-    
+            
     def resume_game(self):
         self.game_paused = False
 

@@ -14,13 +14,9 @@ class HowToScreen(Screen):
         button_height = 50
         center_x = (WINDOW_WIDTH - button_width) // 2
         button_y_start = 200
-        button_color_base = B['rgb']
-        button_color_hover = tuple(min(255, c + 30) for c in button_color_base)
-
-        
 
         self.buttons = [
-            Button((center_x, button_y_start + 300, button_width, button_height), "Back", self.return_home, font_small, button_color_base, button_color_hover),
+            Button((center_x, button_y_start + 240, button_width, button_height), "Back", self.return_home, font_small, G['rgb'], tuple(min(255, c + 30) for c in G['rgb'])),
         ]
     
     def resume_game(self):
@@ -66,10 +62,10 @@ class HowToScreen(Screen):
 
         credits_font = pygame.font.SysFont(DEFAULT_FONT, 12)
         credits_text = credits_font.render("Steven Hall 2025 | stevenhall1986@yahoo.com", True, L['rgb'])
-        credits_rect = credits_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT -30))
+        credits_rect = credits_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT -60))
 
         # Body text lines
-        body_font = pygame.font.SysFont(DEFAULT_FONT, 18)
+        body_font = pygame.font.SysFont(DEFAULT_FONT, 14)
         instructions = [
             "Move with W, A, S, D.",
             "You can only swap bricks horizontally.",
@@ -77,12 +73,13 @@ class HowToScreen(Screen):
             "A - LEFT", 
             "S - DOWN", 
             "D - RIGHT",
-            "SPACEBAR - SWAP"
+            "SPACEBAR - SWAP",
+            "ESC - Pause"
         ]
 
         # Starting position for body text (left-aligned)
         body_x = WINDOW_WIDTH //2
-        body_y = title_rect.bottom + 40  # space below the title
+        body_y = title_rect.bottom + 20  # space below the title
 
         # Render and position each line
         for line in instructions:

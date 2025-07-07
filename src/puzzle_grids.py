@@ -31,9 +31,9 @@ puzzle_dict = {
           ['EM', 'EM', 'EM', 'EM', 'EM', 'EM'],
           ['EM', 'EM', 'EM', 'EM', 'EM', 'EM'],
           ['EM', 'EM', 'EM', 'EM', 'EM', 'EM'],
-          ['EM', 'EM', 'EM', 'EM',  'R', 'EM'],
-          ['EM', 'EM', 'EM', 'EM',  'R', 'EM'],
-          ['EM',  'B',  'B',  'R',  'B', 'EM']
+          ['EM', 'EM', 'EM', 'EM', 'EM', 'EM'],
+          ['EM', 'EM', 'EM', 'EM',  'Y', 'EM'],
+          ['EM',  'Y',  'Y', 'EM',  'Y', 'EM']
       ],
       "max_moves": 1
   },
@@ -52,7 +52,7 @@ puzzle_dict = {
           ['EM', 'EM', 'EM', 'EM', 'EM', 'EM'],
           ['EM', 'EM', 'EM', 'EM', 'EM', 'EM'],
           ['EM', 'EM',  'R',  'R', 'EM', 'EM'],
-          ['EM',  'B',  'B',  'R',  'B', 'EM']
+          ['EM',  'P',  'P',  'R',  'P', 'EM']
       ],
       "max_moves": 1
   },
@@ -71,7 +71,7 @@ puzzle_dict = {
           ['EM', 'EM', 'EM', 'EM', 'EM', 'EM'],
           ['EM', 'EM',  'B',  'B', 'EM', 'EM'],
           ['EM',  'R',  'R',  'B',  'R', 'EM'],
-          ['R',  'B',  'R',  'R',  'B', 'B']
+          [ 'R',  'B',  'Y',  'R',  'B',  'B']
       ],
       "max_moves": 3
   },
@@ -85,12 +85,12 @@ puzzle_dict = {
           ['EM', 'EM', 'EM', 'EM', 'EM', 'EM'],
           ['EM', 'EM', 'EM', 'EM', 'EM', 'EM'],
           ['EM', 'EM', 'EM', 'EM', 'EM', 'EM'],
-          ['EM', 'B', 'EM', 'EM', 'EM', 'EM'],
+          ['EM',  'B', 'EM', 'EM', 'EM', 'EM'],
           ['EM',  'L', 'EM',  'L', 'EM', 'EM'],
-          ['EM',  'G',  'L',  'G',  'EM', 'EM'],
-          ['EM',  'B',  'G',  'B',  'EM', 'EM'],
-          ['EM',  'R',  'B',  'R',  'EM', 'EM'],
-          ['EM',  'B',  'R',  'B',  'EM', 'EM']
+          ['EM',  'G',  'L',  'G', 'EM', 'EM'],
+          ['EM',  'B',  'G',  'B', 'EM', 'EM'],
+          ['EM',  'R',  'B',  'R', 'EM', 'EM'],
+          ['EM',  'B',  'R',  'B', 'EM', 'EM']
       ],
       "max_moves": 4
   },
@@ -182,10 +182,10 @@ puzzle_dict = {
           ['EM', 'EM', 'EM', 'EM', 'EM', 'EM'],
           ['EM', 'EM',  'G', 'EM',  'G', 'EM'],
           ['EM', 'EM',  'G', 'EM',  'G', 'EM'],
-          ['EM', 'EM',  'R', 'EM',  'R', 'EM'],
-          ['EM', 'EM',  'R', 'EM',  'R', 'EM'],
+          ['EM', 'EM',  'R', 'EM',  'B', 'EM'],
+          ['EM', 'EM',  'G',  'R',  'B', 'EM'],
           ['EM', 'EM',  'R',  'G',  'G', 'EM'],
-          ['EM', 'EM',  'G',  'G',  'R', 'EM']
+          ['EM', 'EM',  'G',  'G',  'B', 'EM']
       ],
       "max_moves": 3
   },

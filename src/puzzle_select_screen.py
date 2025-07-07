@@ -15,7 +15,7 @@ class PuzzleSelectScreen(Screen):
         button_width = 50
         button_height = 50
         padding = 10
-
+     
         total_width = self.puzzles_per_row * (button_width + padding) - padding
         start_x = (WINDOW_WIDTH - total_width) // 2
         start_y = 150
@@ -36,6 +36,24 @@ class PuzzleSelectScreen(Screen):
                     tuple(min(255, c + 30) for c in B['rgb'])
                 )
             )
+        
+        center_x = WINDOW_WIDTH // 2
+
+        self.buttons.append(
+            Button(
+                ((center_x - 50) , 520, 100, button_height),
+                  "Back", 
+                  self.return_home, 
+                  font_small, 
+                  G['rgb'], 
+                  tuple(min(255, c + 30) for c in G['rgb'])
+            )
+        )
+           
+
+    def return_home(self):
+        from home_screen_buttons import HomeScreen
+        self.manager.set_screen(HomeScreen(self.manager))
 
     def load_puzzle(self, puzzle_id):
         print(f"Puzzle #: {puzzle_id}")

@@ -6,6 +6,9 @@ class HomeScreen(Screen):
     def __init__(self, manager):
         super().__init__(manager)
         self.color_shift = 0
+        self.last_color_change = pygame.time.get_ticks()
+        self.color_change_interval = 2000  #(2000ms = 2s)
+
 
         font_small = pygame.font.SysFont(DEFAULT_FONT, 24)
         button_width = 300
@@ -18,7 +21,7 @@ class HomeScreen(Screen):
             Button((center_x, button_y_start, button_width, button_height), "Start Endless Mode", self.start_game, font_small, B['rgb'], tuple(min(255, c + 30) for c in B['rgb'])),
             Button((center_x, button_y_start + 70, button_width, button_height), "Start Puzzle Mode", self.start_puzzle_select, font_small, B['rgb'], tuple(min(255, c + 30) for c in B['rgb'])),
             Button((center_x, button_y_start + 140, button_width, button_height), "Quit", self.quit_game, font_small, R['rgb'], tuple(min(255, c + 30) for c in R['rgb'])),
-            Button((center_x, button_y_start + 240, button_width, button_height), "How To Play", self.how_to, font_small, R['rgb'], tuple(min(255, c + 30) for c in R['rgb']))
+            Button((center_x, button_y_start + 240, button_width, button_height), "How To Play", self.how_to, font_small, G['rgb'], tuple(min(255, c + 30) for c in G['rgb']))
         ]
 
     def start_game(self):
@@ -52,7 +55,11 @@ class HomeScreen(Screen):
                     button.check_click(event.pos)
 
     def update(self):
-        self.color_shift += 1
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_color_change >= self.color_change_interval:
+            self.color_shift += 1
+            self.last_color_change = current_time
+
 
     def draw(self, screen):
         # r = int((math.sin(self.color_shift * 0.02) + 1) * 127.5)
@@ -61,9 +68,10 @@ class HomeScreen(Screen):
         # screen.fill((r, g, b))
 
         screen.fill((BACK_GROUND))
+        text_color = COLORS_LIST[self.color_shift % len(COLORS_LIST)]['rgb']
 
         title_font = pygame.font.SysFont(DEFAULT_FONT, 60)
-        title_text = title_font.render("Bricks", True, L['rgb'])
+        title_text = title_font.render("Bricks", True, text_color)
         title_rect = title_text.get_rect(center=(WINDOW_WIDTH // 2, 150))
         screen.blit(title_text, title_rect)
 

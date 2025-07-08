@@ -1,7 +1,9 @@
 import pygame
 import uuid
 import json
+import os
 from dataclasses import dataclass
+from js import localStorage
 
 #Grid size
 COLUMNS = 6
@@ -239,6 +241,7 @@ class Screen:
         self.game_paused = False
         self.game_over = False
         self.score = 0
+        self.player_data = PlayerData(storage = LocalStorage())
         self.bricks = pygame.sprite.Group()
         self.brick_data = COLORS_LIST
         self.current_brick = None
@@ -255,12 +258,110 @@ class Screen:
     def draw(self, screen):
         pass
 
-#Im not sure if this is needed
-    # @dataclass 
-    # class GameState:
-    #     field: list
-    #     temp: list
-    #     sprite_grid: list
-    #     score: int
+class PlayerData:
+    def __init__(self):
+        self.high_score = 0
+        self.puzzles = []
+        self.load()
+
+    def load(self):
+        data_str = localStorage.getItem("PlayerData")
+        if data_str:
+            data = json.loads(data_str)
+            self.high_score = data.get("highScore", 0)
+            self.puzzles = data.get("puzzles", [])
+        else:
+            self.high_score = 0
+            self.puzzles = []
+
+    def save(self):
+        data = {
+            "highScore": self.high_score,
+            "puzzles": self.puzzles
+        }
+        localStorage.setItem("PlayerData", json.dumps(data))
+
+    def update_score(self, score):
+        if score > self.high_score:
+            self.high_score = score
+            self.save()
+
+    def complete_puzzle(self, puzzle_id):
+        if puzzle_id not in self.puzzles:
+            self.puzzles.append(puzzle_id)
+            self.save()
+
+    def reset(self):
+        self.high_score = 0
+        self.puzzles = []
+        self.save()
 
 
+#Local non online storage testing
+# class PlayerData:
+#     def __init__(self, storage=None):
+#         self.localStorage = storage
+#         self.high_score = 0
+#         self.puzzles = []
+#         self.load()
+
+#     def load(self):
+#         data_str = self.localStorage.getItem("PlayerData")
+#         if data_str:
+#             data = json.loads(data_str)
+#             self.high_score = data.get("highScore", 0)
+#             self.puzzles = data.get("puzzles", [])
+#         else:
+#             self.high_score = 0
+#             self.puzzles = []
+
+#     def save(self):
+#         data = {
+#             "highScore": self.high_score,
+#             "puzzles": self.puzzles
+#         }
+#         self.localStorage.setItem("PlayerData", json.dumps(data))
+
+#     def update_score(self, score):
+#         if score > self.high_score:
+#             self.high_score = score
+#             self.save()
+
+#     def complete_puzzle(self, puzzle_id):
+#         if puzzle_id not in self.puzzles:
+#             self.puzzles.append(puzzle_id)
+#             self.save()
+
+#     def reset(self):
+#         self.high_score = 0
+#         self.puzzles = []
+#         self.save()
+
+
+# class LocalStorage:
+#     def __init__(self, filename="local_storage.json"):
+#         self.filename = filename
+#         self._load()
+
+#     def _load(self):
+#         if os.path.exists(self.filename):
+#             with open(self.filename, "r") as f:
+#                 self.store = json.load(f)
+#         else:
+#             self.store = {}
+
+#     def _save(self):
+#         with open(self.filename, "w") as f:
+#             json.dump(self.store, f)
+
+#     def getItem(self, key):
+#         return self.store.get(key)
+
+#     def setItem(self, key, value):
+#         self.store[key] = value
+#         self._save()
+
+#     def removeItem(self, key):
+#         if key in self.store:
+#             del self.store[key]
+#             self._save()

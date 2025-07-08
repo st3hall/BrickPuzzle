@@ -4,12 +4,13 @@ from settings import *
 from puzzle_grids import *
 
 class PuzzleSelectScreen(Screen):
-    def __init__(self, manager, puzzles_per_row=6):
+    def __init__(self, manager, player_data, puzzles_per_row=6):
         super().__init__(manager)
         self.color_shift = 0
         self.total_puzzles = len(puzzle_dict)
         self.puzzles_per_row = puzzles_per_row
         self.buttons = []
+        self.player_data = player_data
 
         font_small = pygame.font.SysFont(DEFAULT_FONT, 24)
         button_width = 50
@@ -19,6 +20,9 @@ class PuzzleSelectScreen(Screen):
         total_width = self.puzzles_per_row * (button_width + padding) - padding
         start_x = (WINDOW_WIDTH - total_width) // 2
         start_y = 150
+
+        self.player_data.load()
+        completed_puzzles = self.player_data.puzzles
 
         for i in range(self.total_puzzles):
             row = i // self.puzzles_per_row
@@ -32,9 +36,10 @@ class PuzzleSelectScreen(Screen):
                     f"{puzzle_id}",
                     lambda pid=puzzle_id: self.load_puzzle(pid),
                     font_small,
-                    B['rgb'],
-                    tuple(min(255, c + 30) for c in B['rgb'])
+                    G['rgb'] if puzzle_id in completed_puzzles else B['rgb'],
+                    tuple(min(255, c + 30) for c in (G['rgb'] if puzzle_id in completed_puzzles else B['rgb']))
                 )
+
             )
         
         center_x = WINDOW_WIDTH // 2
@@ -49,16 +54,16 @@ class PuzzleSelectScreen(Screen):
                   tuple(min(255, c + 30) for c in G['rgb'])
             )
         )
-           
+        print(f"Puzzles Complete: {completed_puzzles}")
 
     def return_home(self):
         from home_screen_buttons import HomeScreen
-        self.manager.set_screen(HomeScreen(self.manager))
+        self.manager.set_screen(HomeScreen(self.manager,self.player_data))
 
     def load_puzzle(self, puzzle_id):
         print(f"Puzzle #: {puzzle_id}")
         from puzzle_screen import PuzzleScreen
-        self.manager.set_screen(PuzzleScreen(self.manager, puzzle_id))
+        self.manager.set_screen(PuzzleScreen(self.manager, puzzle_id, self.player_data))
 
     def handle_events(self, events):
         mouse_pos = pygame.mouse.get_pos()

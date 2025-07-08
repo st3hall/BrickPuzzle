@@ -8,7 +8,6 @@ class GameScreen(Screen):
     def __init__(self, manager, player_data):
         self.manager = manager
         self.player_data = player_data
-        #player_data = PlayerData()
         
         self.player_pos = pygame.Vector2(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
         self.matches_found = False

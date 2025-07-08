@@ -241,7 +241,7 @@ class Screen:
         self.game_paused = False
         self.game_over = False
         self.score = 0
-        self.player_data = PlayerData(storage = LocalStorage())
+        self.player_data = PlayerData()
         self.bricks = pygame.sprite.Group()
         self.brick_data = COLORS_LIST
         self.current_brick = None

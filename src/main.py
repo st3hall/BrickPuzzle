@@ -12,8 +12,6 @@ from game_screen import GameScreen
 from puzzle_screen import PuzzleScreen
 from home_screen_buttons import HomeScreen
 import asyncio #for online game functionality
-from js import localStorage
-
 
 pygame.init()
 

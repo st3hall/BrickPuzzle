@@ -12,13 +12,15 @@ from game_screen import GameScreen
 from puzzle_screen import PuzzleScreen
 from home_screen_buttons import HomeScreen
 import asyncio #for online game functionality
+from js import localStorage
+
 
 pygame.init()
 
 screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.DOUBLEBUF, 32)
 clock = pygame.time.Clock()
 manager = ScreenManager()
-manager.set_screen(HomeScreen(manager, player_data=PlayerData(storage=LocalStorage())))
+manager.set_screen(HomeScreen(manager, player_data=PlayerData()))
 
 async def main():
     run = True

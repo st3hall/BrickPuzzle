@@ -18,7 +18,7 @@ pygame.init()
 screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.DOUBLEBUF, 32)
 clock = pygame.time.Clock()
 manager = ScreenManager()
-manager.set_screen(HomeScreen(manager))
+manager.set_screen(HomeScreen(manager, player_data=PlayerData(storage=LocalStorage())))
 
 async def main():
     run = True

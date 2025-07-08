@@ -3,12 +3,12 @@ from settings import*
 import math
 
 class HomeScreen(Screen):
-    def __init__(self, manager):
+    def __init__(self, manager, player_data):
         super().__init__(manager)
         self.color_shift = 0
         self.last_color_change = pygame.time.get_ticks()
         self.color_change_interval = 2000  #(2000ms = 2s)
-
+        self.player_data = player_data
 
         font_small = pygame.font.SysFont(DEFAULT_FONT, 24)
         button_width = 300
@@ -24,17 +24,19 @@ class HomeScreen(Screen):
             Button((center_x, button_y_start + 240, button_width, button_height), "How To Play", self.how_to, font_small, G['rgb'], tuple(min(255, c + 30) for c in G['rgb']))
         ]
 
+        self.player_data.load()
+
     def start_game(self):
         from game_screen import GameScreen
-        self.manager.set_screen(GameScreen(self.manager))
+        self.manager.set_screen(GameScreen(self.manager, self.player_data))
     
     def start_puzzle_select(self):
         from puzzle_select_screen import PuzzleSelectScreen
-        self.manager.set_screen(PuzzleSelectScreen(self.manager))
+        self.manager.set_screen(PuzzleSelectScreen(self.manager, self.player_data))
     
     def how_to(self):
         from how_to_screen import HowToScreen
-        self.manager.set_screen(HowToScreen(self.manager))
+        self.manager.set_screen(HowToScreen(self.manager, self.player_data))
 
     # def start_puzzle(self):
     #     from puzzle_screen import PuzzleScreen
@@ -74,6 +76,11 @@ class HomeScreen(Screen):
         title_text = title_font.render("Bricks", True, text_color)
         title_rect = title_text.get_rect(center=(WINDOW_WIDTH // 2, 150))
         screen.blit(title_text, title_rect)
+
+        score_font = pygame.font.SysFont(DEFAULT_FONT, 24)
+        score_text = score_font.render (f"High Score: {self.player_data.high_score}", True, L['rgb'])
+        score_rect = score_text.get_rect(center=(WINDOW_WIDTH // 2, 75))
+        screen.blit(score_text, score_rect)
 
         for button in self.buttons:
             button.draw(screen)

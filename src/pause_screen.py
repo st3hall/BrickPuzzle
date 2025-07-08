@@ -4,10 +4,11 @@ from game_screen import GameScreen
 import math
 
 class PauseScreen(Screen):
-    def __init__(self, manager):
+    def __init__(self, manager, player_data):
         super().__init__(manager)
         self.color_shift = 0
         self.game_paused = True
+        self.player_data = player_data
 
         font_small = pygame.font.SysFont(DEFAULT_FONT, 24)
         button_width = 300
@@ -30,11 +31,11 @@ class PauseScreen(Screen):
 
     def return_home(self):
         from home_screen_buttons import HomeScreen
-        self.manager.set_screen(HomeScreen(self.manager))
+        self.manager.set_screen(HomeScreen(self.manager, self.player_data))
     
     def start_puzzle_select(self):
         from puzzle_select_screen import PuzzleSelectScreen
-        self.manager.set_screen(PuzzleSelectScreen(self.manager))
+        self.manager.set_screen(PuzzleSelectScreen(self.manager, self.player_data))
 
     def quit_game(self):
         pygame.quit()

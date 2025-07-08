@@ -4,17 +4,19 @@ import pygame
 import random
 from home_screen_buttons import*
 
-
 class GameScreen(Screen):
-    def __init__(self, manager):
+    def __init__(self, manager, player_data):
         self.manager = manager
+        self.player_data = player_data
+        #player_data = PlayerData()
+        
         self.player_pos = pygame.Vector2(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
         self.matches_found = False
         self.match_made = False
         self.all_bricks = pygame.sprite.Group()
         self.background = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
         self.background.fill(BACK_GROUND)
-
+        
         #self.background = pygame.image.load('images/hill-country-braun-sunrise.jpg')
         self.move_delay = 150
         self.cursor_index_y = ROWS // 2
@@ -125,8 +127,9 @@ class GameScreen(Screen):
                 self.row_added = False
 
             if check_game_over(self.field, current_row=self.current_row_raised):
+                self.player_data.update_score(self.score)
                 print("Game Over!")
-                self.manager.set_screen(HomeScreen(self.manager))
+                self.manager.set_screen(HomeScreen(self.manager, self.player_data))
                 return
             
             for r in range(len(self.sprite_grid)):
@@ -145,15 +148,15 @@ class GameScreen(Screen):
             
     def return_home(self):
         from home_screen_buttons import HomeScreen
-        self.manager.set_screen(HomeScreen(self.manager))
+        self.manager.set_screen(HomeScreen(self.manager, self.player_data))
     
     def return_to_select(self): #Not used here, only in puzzle
         from puzzle_select_screen import PuzzleSelectScreen
-        self.manager.set_screen(PuzzleSelectScreen(self.manager))
+        self.manager.set_screen(PuzzleSelectScreen(self.manager, self.player_data))
     
     def pause_game(self):
         from pause_screen import PauseScreen
-        self.manager.set_screen(PauseScreen(self.manager))
+        self.manager.set_screen(PauseScreen(self.manager, self.player_data))
         game_paused = True
 
     def retry_puzzle(self):

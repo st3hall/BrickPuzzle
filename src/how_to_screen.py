@@ -4,10 +4,11 @@ from game_screen import GameScreen
 import math
 
 class HowToScreen(Screen):
-    def __init__(self, manager):
+    def __init__(self, manager, player_data):
         super().__init__(manager)
         self.color_shift = 0
         self.game_paused = True
+        self.player_data = player_data
 
         font_small = pygame.font.SysFont(DEFAULT_FONT, 24)
         button_width = 300
@@ -17,6 +18,7 @@ class HowToScreen(Screen):
 
         self.buttons = [
             Button((center_x, button_y_start + 240, button_width, button_height), "Back", self.return_home, font_small, G['rgb'], tuple(min(255, c + 30) for c in G['rgb'])),
+            Button((center_x, button_y_start + 310, button_width, button_height), "Reset Data", self.reset_data, font_small, R['rgb'], tuple(min(255, c + 30) for c in R['rgb']))
         ]
     
     def resume_game(self):
@@ -24,15 +26,19 @@ class HowToScreen(Screen):
 
     def return_home(self):
         from home_screen_buttons import HomeScreen
-        self.manager.set_screen(HomeScreen(self.manager))
+        self.manager.set_screen(HomeScreen(self.manager, self.player_data))
     
     def start_puzzle_select(self):
         from puzzle_select_screen import PuzzleSelectScreen
-        self.manager.set_screen(PuzzleSelectScreen(self.manager))
+        self.manager.set_screen(PuzzleSelectScreen(self.manager, self.player_data))
 
     def quit_game(self):
         pygame.quit()
         exit()
+
+    def reset_data(self):
+        self.player_data.reset()
+        print("Data Reset")
 
     def handle_events(self, events):
         mouse_pos = pygame.mouse.get_pos()

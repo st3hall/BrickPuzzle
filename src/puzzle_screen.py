@@ -7,8 +7,9 @@ from puzzle_grids import *
 
 
 class PuzzleScreen(Screen):
-    def __init__(self, manager, puzzle_id):
+    def __init__(self, manager, puzzle_id, player_data):
         self.manager = manager
+        self.player_data = player_data
         self.player_pos = pygame.Vector2(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
         self.matches_found = False
         self.match_made = False
@@ -59,10 +60,10 @@ class PuzzleScreen(Screen):
             Button((center_x - (button_spacing), button_y_start, button_width, button_height), "Select", self.return_to_select, font_small, G['rgb'], tuple(min(255, c + 30) for c in G['rgb'])),
             Button((center_x + (button_spacing), button_y_start, button_width, button_height), "Restart", self.retry_puzzle, font_small, R['rgb'], tuple(min(255, c + 30) for c in R['rgb']))
         ]
-    
+        
     def return_to_select(self):
         from puzzle_select_screen import PuzzleSelectScreen
-        self.manager.set_screen(PuzzleSelectScreen(self.manager))
+        self.manager.set_screen(PuzzleSelectScreen(self.manager, self.player_data))
 
     def retry_puzzle(self):
         self.moves_count = 0
@@ -133,6 +134,7 @@ class PuzzleScreen(Screen):
         if result in ["complete", "retry"]:
             if result == "complete":
                 print(f"Puzzle complete!")
+                self.player_data.complete_puzzle(self.puzzle_number)
                 self.puzzle_number += 1
                 self.moves_count = 0
             elif result == "retry":

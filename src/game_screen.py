@@ -158,10 +158,6 @@ class GameScreen(Screen):
         self.manager.set_screen(PauseScreen(self.manager, self.player_data))
         game_paused = True
 
-    def retry_puzzle(self):
-        self.moves_count = 0
-        self.field, self.temp, self.sprite_grid, self.all_bricks, self.moves_available = initial_run_puzzle(COLORS_LIST, self.all_bricks, self.puzzle_number)
-
     def draw(self, surface):
         surface.blit(self.background, (0,0))#(-center_of_window_x, -center_of_field_y))
         draw_sprites(self.sprite_grid, self.scroll_offset, surface)

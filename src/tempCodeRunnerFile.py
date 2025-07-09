@@ -1,0 +1,1 @@
+from js import localStorage

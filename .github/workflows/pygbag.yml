@@ -22,3 +22,6 @@ jobs:
       with:
         branch: gh-pages
         folder: src/build/web
+        clean: true
+        single-commit: true
+

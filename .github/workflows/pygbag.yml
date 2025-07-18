@@ -17,6 +17,9 @@ jobs:
       run: |
         python -m pygbag --build .
 
+    - name: Overwrite index.html with custom version
+      run: cp ./src/index.html ./src/build/web/index.html
+
     - name: Upload to GitHub Pages branch gh-pages
       uses: JamesIves/github-pages-deploy-action@4.1.7
       with:

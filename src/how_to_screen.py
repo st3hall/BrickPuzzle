@@ -75,10 +75,10 @@ class HowToScreen(Screen):
         instructions = [
             "Move with W, A, S, D.",
             "You can only swap bricks horizontally.",
-            "W - UP", 
-            "A - LEFT", 
-            "S - DOWN", 
-            "D - RIGHT",
+            "W or ↑ or 8 : UP"  , 
+            "S or ↓ or 5 : DOWN", 
+            "A or ← or 4 : LEFT", 
+            "D or → or 6 : RIGHT",
             "SPACEBAR - SWAP",
             "ESC - Pause"
         ]

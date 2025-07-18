@@ -4,10 +4,6 @@ import json
 import os
 from dataclasses import dataclass
 
-from js import document
-document.title = "Bricks"
-
-
 #Grid size
 COLUMNS = 6
 ROWS = 14

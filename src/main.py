@@ -12,6 +12,18 @@ from game_screen import GameScreen
 from puzzle_screen import PuzzleScreen
 from home_screen_buttons import HomeScreen
 import asyncio #for online game functionality
+import sys
+
+# Check if running in browser
+if sys.platform == "emscripten":
+    from js import window, document
+    using_browser = True
+    document.title = "My Awesome Game"  # <-- Set tab title here
+else:
+    using_browser = False
+    window = None
+    document = None
+
 
 pygame.init()
 

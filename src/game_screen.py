@@ -210,21 +210,21 @@ def update_cursor_position(keys, player_pos, cursor_index_x, cursor_index_y, las
         min_cursor_index_y = current_row_raised
 
         # UP
-        if keys[pygame.K_w]:
+        if keys[pygame.K_w] or keys[pygame.K_UP] or keys[pygame.K_8]:
             if cursor_index_y > min_cursor_index_y:
                 cursor_index_y -= 1
                 player_pos.y -= BRICK_HEIGHT
                 last_move_time = current_time
 
         # DOWN
-        if keys[pygame.K_s]:
+        if keys[pygame.K_s] or keys[pygame.K_DOWN] or keys[pygame.K_5]:
             if cursor_index_y < max_cursor_index_y:
                 cursor_index_y += 1
                 player_pos.y += BRICK_HEIGHT
                 last_move_time = current_time
 
         #LEFT
-        if keys[pygame.K_a]:
+        if keys[pygame.K_a] or keys[pygame.K_LEFT] or keys[pygame.K_4]:
             # if player_pos.x <= (center_of_window_x - (GAME_WIDTH / 2) + BRICK_WIDTH):
             #     player_pos.x -= 0
             # else:
@@ -232,7 +232,7 @@ def update_cursor_position(keys, player_pos, cursor_index_x, cursor_index_y, las
             cursor_index_x = max(1, cursor_index_x - 1)
             last_move_time = current_time
         #RIGHT
-        if keys[pygame.K_d]:
+        if keys[pygame.K_d] or keys[pygame.K_RIGHT] or keys[pygame.K_6]:
             # if player_pos.x >= (center_of_window_x + (GAME_WIDTH / 2) - (BRICK_WIDTH)):
             #     player_pos.x += 0
             # else:

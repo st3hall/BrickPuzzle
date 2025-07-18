@@ -3,7 +3,7 @@ import uuid
 import json
 import os
 from dataclasses import dataclass
-from js import localStorage
+
 
 #Grid size
 COLUMNS = 6
@@ -258,6 +258,15 @@ class Screen:
     def draw(self, screen):
         pass
 
+
+# Try to import localStorage from the browser (Pyodide/Pygbag)
+try:
+    from js import localStorage
+    using_browser = True
+except ImportError:
+    using_browser = False
+    localStorage = None  # Optional: define a mock or file-based fallback
+
 class PlayerData:
     def __init__(self):
         self.high_score = 0
@@ -265,7 +274,15 @@ class PlayerData:
         self.load()
 
     def load(self):
-        data_str = localStorage.getItem("PlayerData")
+        if using_browser:
+            data_str = localStorage.getItem("PlayerData")
+        else:
+            try:
+                with open("player_data.json", "r") as f:
+                    data_str = f.read()
+            except FileNotFoundError:
+                data_str = None
+
         if data_str:
             data = json.loads(data_str)
             self.high_score = data.get("highScore", 0)
@@ -279,7 +296,13 @@ class PlayerData:
             "highScore": self.high_score,
             "puzzles": self.puzzles
         }
-        localStorage.setItem("PlayerData", json.dumps(data))
+        data_str = json.dumps(data)
+
+        if using_browser:
+            localStorage.setItem("PlayerData", data_str)
+        else:
+            with open("player_data.json", "w") as f:
+                f.write(data_str)
 
     def update_score(self, score):
         if score > self.high_score:
@@ -295,6 +318,46 @@ class PlayerData:
         self.high_score = 0
         self.puzzles = []
         self.save()
+
+
+
+# class PlayerData:
+#     def __init__(self):
+#         self.high_score = 0
+#         self.puzzles = []
+#         self.load()
+
+#     def load(self):
+#         data_str = localStorage.getItem("PlayerData")
+#         if data_str:
+#             data = json.loads(data_str)
+#             self.high_score = data.get("highScore", 0)
+#             self.puzzles = data.get("puzzles", [])
+#         else:
+#             self.high_score = 0
+#             self.puzzles = []
+
+#     def save(self):
+#         data = {
+#             "highScore": self.high_score,
+#             "puzzles": self.puzzles
+#         }
+#         localStorage.setItem("PlayerData", json.dumps(data))
+
+#     def update_score(self, score):
+#         if score > self.high_score:
+#             self.high_score = score
+#             self.save()
+
+#     def complete_puzzle(self, puzzle_id):
+#         if puzzle_id not in self.puzzles:
+#             self.puzzles.append(puzzle_id)
+#             self.save()
+
+#     def reset(self):
+#         self.high_score = 0
+#         self.puzzles = []
+#         self.save()
 
 
 #Local non online storage testing

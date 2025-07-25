@@ -279,7 +279,7 @@ puzzle_dict = {
           ['EM',  'G', 'EM',  'L', 'EM', 'EM'],
           ['EM',  'P',  'Y',  'L', 'EM', 'EM'],
           ['EM',  'L',  'B',  'B', 'EM', 'EM'],
-          ['EM',  'Y',  'R',  'Y', 'EM', 'EM'],
+          ['EM',  'Y',  'P',  'Y', 'EM', 'EM'],
           ['EM',  'P',  'G',  'G',  'B', 'EM']
       ],
       "max_moves": 3

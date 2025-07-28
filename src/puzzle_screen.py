@@ -4,6 +4,7 @@ import random
 from home_screen_buttons import *
 from game_screen import *
 from puzzle_grids import *
+from puzzle_select_screen import PuzzleSelectScreen
 
 
 class PuzzleScreen(Screen):
@@ -40,6 +41,9 @@ class PuzzleScreen(Screen):
         self.puzzle_number = puzzle_id
         dt = self.clock.tick(60)/1000
         
+        self.player_data.load()
+        self.total_puzzles = len(puzzle_dict)
+                
         
         # Initialize your game field
         self.field, self.temp, self.sprite_grid, self.all_bricks, self.moves_available = initial_run_puzzle(COLORS_LIST, self.all_bricks,self.puzzle_number)
@@ -94,6 +98,7 @@ class PuzzleScreen(Screen):
     def update(self): 
         dt = self.clock.tick(60) / 1000   
         keys = pygame.key.get_pressed()
+        completed_puzzles = self.player_data.puzzles
 
         self.cursor_index_y, self.cursor_index_x, self.last_move_time = update_cursor_position(
             keys, self.player_pos, self.cursor_index_x, self.cursor_index_y, self.last_move_time, self.move_delay
@@ -130,19 +135,36 @@ class PuzzleScreen(Screen):
             del self.next_state
         
         result = check_if_done(self.field, self.moves_count, self.moves_available)
-                
+
         if result in ["complete", "retry"]:
             if result == "complete":
-                print(f"Puzzle complete!")
+                print(f"Puzzle {self.puzzle_number} completed!")
                 self.player_data.complete_puzzle(self.puzzle_number)
                 self.puzzle_number += 1
                 self.moves_count = 0
+
+                completed_puzzles = self.player_data.puzzles  # Make sure this is updated
+                if len(completed_puzzles) == self.total_puzzles:
+                    print("All puzzles completed! Returning to home screen.")
+                    self.manager.set_screen(PuzzleSelectScreen(self.manager, self.player_data))
+                    return
+
+                # Check if the next puzzle exists
+                if self.puzzle_number >= self.total_puzzles:
+                    # Find the first puzzle index that hasn't been completed
+                    for i in range(self.total_puzzles):
+                        if i not in completed_puzzles:
+                            self.puzzle_number = i
+                            break
+
             elif result == "retry":
                 print("Retrying puzzle...")
-            
-            self.moves_count = 0
-            self.field, self.temp, self.sprite_grid, self.all_bricks, self.moves_available = initial_run_puzzle(COLORS_LIST, self.all_bricks, self.puzzle_number)
 
+            self.moves_count = 0
+            self.field, self.temp, self.sprite_grid, self.all_bricks, self.moves_available = initial_run_puzzle(
+                COLORS_LIST, self.all_bricks, self.puzzle_number
+            )
+    
     def draw(self, surface):
         surface.blit(self.background, (0,0)) #(-center_of_window_x, -center_of_field_y))
         draw_sprites(self.sprite_grid, self.scroll_offset, surface)

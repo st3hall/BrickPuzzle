@@ -43,6 +43,8 @@ class PuzzleScreen(Screen):
         
         self.player_data.load()
         self.total_puzzles = len(puzzle_dict)
+        self.congrats_shown = False
+
                 
         
         # Initialize your game field
@@ -134,24 +136,24 @@ class PuzzleScreen(Screen):
             self.state = self.next_state
             del self.next_state
         
-        result = check_if_done(self.field, self.moves_count, self.moves_available)
-
         if result in ["complete", "retry"]:
             if result == "complete":
                 print(f"Puzzle {self.puzzle_number} completed!")
                 self.player_data.complete_puzzle(self.puzzle_number)
-                self.puzzle_number += 1
                 self.moves_count = 0
 
-                completed_puzzles = self.player_data.puzzles  # Make sure this is updated
+                completed_puzzles = self.player_data.puzzles
                 if len(completed_puzzles) == self.total_puzzles:
-                    print("All puzzles completed! Returning to home screen.")
-                    self.manager.set_screen(PuzzleSelectScreen(self.manager, self.player_data))
+                    if not self.player_data.congrats_shown:
+                        self.congrats_message = "🎉 Congratulations! You completed all the puzzles! 🎉"
+                        self.player_data.congrats_shown = True
                     return
+
+                # Only advance if not all puzzles are completed
+                self.puzzle_number += 1
 
                 # Check if the next puzzle exists
                 if self.puzzle_number >= self.total_puzzles:
-                    # Find the first puzzle index that hasn't been completed
                     for i in range(self.total_puzzles):
                         if i not in completed_puzzles:
                             self.puzzle_number = i
@@ -164,6 +166,7 @@ class PuzzleScreen(Screen):
             self.field, self.temp, self.sprite_grid, self.all_bricks, self.moves_available = initial_run_puzzle(
                 COLORS_LIST, self.all_bricks, self.puzzle_number
             )
+
     
     def draw(self, surface):
         surface.blit(self.background, (0,0)) #(-center_of_window_x, -center_of_field_y))
@@ -203,6 +206,13 @@ class PuzzleScreen(Screen):
         
         for button in self.buttons:
             button.draw(surface)
+
+        if hasattr(self, 'congrats_message'):
+            font = pygame.font.SysFont(None, 48)  # You can change font and size
+            text_surface = font.render(self.congrats_message, True, (255, 215, 0))  # Gold color
+            text_rect = text_surface.get_rect(center=(self.screen.get_width() // 2, 100))  # Centered at top
+            self.screen.blit(text_surface, text_rect)
+
        
 def get_puzzle(puzzle_dict, number=1):
     key = f"puzzle_{number}"

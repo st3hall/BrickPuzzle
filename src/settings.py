@@ -275,6 +275,7 @@ class PlayerData:
         self.high_score = 0
         self.puzzles = []
         self.load()
+        self.congrats_shown = False  # Initialize congrats message
 
     def load(self):
         if using_browser:
@@ -321,6 +322,7 @@ class PlayerData:
         self.high_score = 0
         self.puzzles = []
         self.save()
+        self.congrats_shown = False  # Reset congrats message
 
 
 

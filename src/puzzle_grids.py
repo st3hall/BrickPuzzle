@@ -446,7 +446,7 @@ puzzle_dict = {
           ['EM', 'EM', 'EM', 'EM', 'EM', 'EM'],
           ['EM', 'EM', 'EM', 'EM', 'EM', 'EM'],
           ['EM', 'EM', 'EM', 'EM', 'EM', 'EM'],
-          ['EM', 'EM', 'EM', 'EM', 'EM', 'EM'],
+          ['EM',  'G', 'EM', 'EM', 'EM', 'EM'],
           [ 'P',  'P', 'EM',  'P',  'P', 'EM'],
           [ 'P',  'G', 'EM',  'G',  'P', 'EM'],
           [ 'G',  'P', 'EM',  'P',  'G', 'EM'],

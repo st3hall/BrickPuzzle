@@ -136,6 +136,8 @@ class PuzzleScreen(Screen):
             self.state = self.next_state
             del self.next_state
         
+        result = check_if_done(self.field, self.moves_count, self.moves_available)
+
         if result in ["complete", "retry"]:
             if result == "complete":
                 print(f"Puzzle {self.puzzle_number} completed!")
